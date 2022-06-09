@@ -1,0 +1,116 @@
+---
+title: "Pseudocode"
+author: "Astrid Elmann Hansen"
+date: '2022-06-08'
+output: html_document
+editor_options: 
+  markdown: 
+    wrap: 72
+---
+
+# Pure interdependence theory
+
+All agents are connected
+
+Friendships don't deteriorate
+
+Agents can't be alone
+
+cl_sat and cl_alt traits are constant pr. agent and independent of dyads
+
+ka and kp are constant and identical for all agents
+
+All agents opt to choose OwnMax in matrices
+
+Joint control = 1
+
+Uden intercept
+
+```{r}
+# agent
+for each agent
+  cl_sat
+  cl_alt
+  for each dyad
+    dep = sum (outcome – cl_alt) / ticks_spent_tog
+    sat = sum (outcome – cl_sat) / ticks_spent_tog
+
+# global
+ka = 2
+kp = 2
+kj = 0
+
+if dep = positive
+  ac = ka/dep
+  pc = dep/kp
+  
+if dep = negative
+  ac = dep/ka
+  pc = kp/dep
+
+```
+
+```{r}
+# Invitation phase
+invit <- as_tibble(agents = agents, date = rep(FALSE:N), to = rep(NA), with = NA)
+hangout <- as_tibble
+
+while len(invit) != 0 # while some agents are left in invite-phase
+    for agent in invit # each agent sends invites
+        choice <- dyads %>% # make a df from dyads
+        filter(agent_1 == agent) %>% # only choose current agent
+        filter(agent_2 %in% invit) %>% # remove agents that already have a date (are no longer in invit)
+        arrange(desc(sat)) # sort so agent with higest sat is on top
+      invit_agent <- choice$agent_2[1] # select top agent
+      invit$to[agent] <- invit_agent # in invit set agent choice (might need where() here ?)
+    
+      for each agent in invit # each agent checks whether they have mutual invites
+        invit_agent <- invit$to[agent] # the agent i invited
+        if invit$to[invit_agent] == agent # if the invite from my invit_agent is to me
+          invit$date[agent] <- TRUE # set that i have a date
+          invit$with[agent] <- invit_agent # set that it is with the person i invited
+
+    hangout_dyads <- invit %>% filter(date == TRUE) # select chosen dyads
+    hangout <- rbind(hangout, hangout_dyads) # append dyads to hangout df
+    
+    invit <- invit %>% filter(date == FALSE) %>% randomize(invit) # remove agents with dates from invite, shuffle invit
+    
+    for agent in invit
+    
+        options <- invit %>% filter(to == agent & date == FALSE) # make a df with agents that sent me invites, and are still available
+        if len(options) != 0 # if i have options
+          if len(options) == 1
+          
+        if len(options) > 1 # if i have more than one option
+            choice <- dyads %>% # make a df from dyads
+            filter(agent_1 == agent) %>% # only choose current agent
+            filter(agent_2 %in% options) %>% # onlye choose agents that i have as options
+           
+              
+              arrange(desc(sat)) # sort so agent with higest sat is on top
+        
+          for agent in choice
+        invit_agent <- choice$agent_2[1] # select top agent
+      
+        
+          invit$date[invit$agent] <- TRUE # set that other agent has a date
+          invit$with[invit$agent] <- agent # set that it is with me
+          
+    print(loop)
+    
+
+```
+
+```{r}
+# Hangout phase
+for each dyad
+  # generate matrix (a1b1, a2b1, a1b2, a2b2)
+  for each agent
+    a1b1 <- ac + pc + kj
+    a2b1 <- ac + pc + kj
+    a1b2 <- ac + pc + kj
+    a2b2 <- ac + pc + kj
+    
+    choice <- higest()
+  
+```
