@@ -8,6 +8,12 @@ editor_options:
     wrap: 72
 ---
 
+```{r}
+pacman::p_load(tidyverse)
+set.seed(35)
+```
+
+
 # Pure interdependence theory
 
 All agents are connected
@@ -26,7 +32,9 @@ Joint control = 1
 
 Uden intercept
 
-```{r}
+> When sorting for higest sat - what if two are similar? How do we sort?
+
+```{r notes}
 # agent
 for each agent
   cl_sat
@@ -34,7 +42,7 @@ for each agent
   for each dyad
     dep = sum (outcome – cl_alt) / ticks_spent_tog
     sat = sum (outcome – cl_sat) / ticks_spent_tog
-
+    
 # global
 ka = 2
 kp = 2
@@ -50,42 +58,102 @@ if dep = negative
 
 ```
 
-```{r}
-# Invitation phase
-invit <- as_tibble(agents = agents, date = rep(FALSE:N), to = rep(NA), with = NA)
-hangout <- as_tibble
+```{r tibble setup}
+N <- 6 # number of agents
+initial_dep <- 0.1 # the dependence value all dyads start with
+initial_sat <- 0.1 # the satisfaction value all dyads start with
 
-while len(invit) != 0 # while some agents are left in invite-phase
-    for agent in invit # each agent sends invites
+agents <- seq(1:N)
+```
+
+
+```{r tibble setup}
+invit <- tibble(agent = as.numeric(agents), # create empty invit table with all agents 
+                date = rep(FALSE,N), 
+                to = as.numeric(rep(NA,N)), 
+                with = as.numeric(rep(NA,N)))
+
+hangout <- tibble(agents = numeric(), # create empty hangout table
+                  date = logical(), 
+                  to = numeric(), 
+                  with = numeric())
+
+dyads <- tibble(agent_1 = as.numeric(rep(1:N, each=N)), # create df with dyads and inital values
+                agent_2 = as.numeric(rep(seq(1:N),N)),
+                sat = as.numeric(rep(initial_sat,N^2)),
+                dep = as.numeric(rep(initial_dep,N^2)))
+  
+dyads <- dyads %>% filter(agent_1 != agent_2) # Remove dyads with the same agent twice
+
+```
+
+```{r test}
+for (agent in invit$agents){ print(agent) }
+
+rows <- sample(nrow(invit))
+random_invit <- invit[rows, ]
+
+for (agent in random_invit$agents){ print(agent) }
+```
+```{r}
+agent <- 1
+choice <- dyads %>% # make a df from dyads
+        filter(agent_1 == agent) %>% # only choose current agent
+        filter(!(agent_2 %in% invit)) %>% # remove agents that already have a date (are no longer in invit)
+        arrange(desc(sat)) # sort so agent with higest sat is on top #@
+      invit_agent <- choice$agent_2[1] # select top agent
+      agent_index <- which(invit$agent == agent) # get the row number for the current agent in invit
+      invit$to[agent_index] <- invit_agent # in invit set agent choice (might need where() here ?)
+```
+
+
+```{r}
+while (nrow(invit) != 0){ # while some agents are left in invite-phase
+
+############################### Send invites ###################################
+    for (agent in invit$agents){ # each agent sends invites
         choice <- dyads %>% # make a df from dyads
         filter(agent_1 == agent) %>% # only choose current agent
         filter(agent_2 %in% invit) %>% # remove agents that already have a date (are no longer in invit)
-        arrange(desc(sat)) # sort so agent with higest sat is on top
+        arrange(desc(sat)) # sort so agent with higest sat is on top #### OBS! What i secondary sort????? ####
       invit_agent <- choice$agent_2[1] # select top agent
       invit$to[agent] <- invit_agent # in invit set agent choice (might need where() here ?)
-    
+    }
+####################### Check for mutual invites ###############################
       for each agent in invit # each agent checks whether they have mutual invites
         invit_agent <- invit$to[agent] # the agent i invited
         if invit$to[invit_agent] == agent # if the invite from my invit_agent is to me
           invit$date[agent] <- TRUE # set that i have a date
           invit$with[agent] <- invit_agent # set that it is with the person i invited
 
+############################ Update invit df ###################################          
     hangout_dyads <- invit %>% filter(date == TRUE) # select chosen dyads
     hangout <- rbind(hangout, hangout_dyads) # append dyads to hangout df
-    
     invit <- invit %>% filter(date == FALSE) %>% randomize(invit) # remove agents with dates from invite, shuffle invit
-    
+
+############################ Accept invites ####################################
     for agent in invit
-    
-        options <- invit %>% filter(to == agent & date == FALSE) # make a df with agents that sent me invites, and are still available
-        if len(options) != 0 # if i have options
-          if len(options) == 1
+      if date == FALSE # Only look at agents without a date
+     options <- invit %>% filter(to == agent & date == FALSE) # make a df with agents that sent me invites, and are still available
           
-        if len(options) > 1 # if i have more than one option
+     if len(options) == 1 # if i have one option
+          agent_option <- options$agent[1] # the name of the one agent that sent me an invite
+          invit$date[agent] <- TRUE # set that i have a date
+          invit$with[agent] <- agent_option # set that it is with the person on my options list
+          invit$date[agent_option] <- TRUE # set that other agent has a date
+          invit$with[agent_option] <- agent # set that it is with me
+     
+          else if len(options) > 1 # if i have more than one option
             choice <- dyads %>% # make a df from dyads
             filter(agent_1 == agent) %>% # only choose current agent
-            filter(agent_2 %in% options) %>% # onlye choose agents that i have as options
-           
+            filter(agent_2 %in% options) %>% # only choose agents that i have as options
+            arrange(desc(sat)) # sort so agent with higest sat is on top #### OBS! What i secondary sort????? ####
+
+          agent_option <- options$agent[1] # the name of the one agent that sent me an invite
+          invit$date[agent] <- TRUE # set that i have a date
+          invit$with[agent] <- agent_option # set that it is with the person on my options list
+          invit$date[agent_option] <- TRUE # set that other agent has a date
+          invit$with[agent_option] <- agent # set that it is with me
               
               arrange(desc(sat)) # sort so agent with higest sat is on top
         
@@ -98,7 +166,7 @@ while len(invit) != 0 # while some agents are left in invite-phase
           
     print(loop)
     
-
+} # end of while loop
 ```
 
 ```{r}
