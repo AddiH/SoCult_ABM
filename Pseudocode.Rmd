@@ -10,7 +10,6 @@ editor_options:
 
 ```{r}
 pacman::p_load(tidyverse)
-set.seed(35)
 ```
 
 
@@ -24,29 +23,21 @@ Agents can't be alone
 
 cl_sat and cl_alt traits are constant pr. agent and independent of dyads
 
-ka and kp are constant and identical for all agents
+dep = sum (outcome – cl_alt) / ticks_spent_tog
+
+sat = sum (outcome – cl_sat) / ticks_spent_tog
+    
+ka, kp and kj are constant and identical for all agents
+
+ka = 2
+kp = 2
+kj = 0
 
 All agents opt to choose OwnMax in matrices
 
 Joint control = 1
 
 Uden intercept
-
-> When sorting for higest sat - what if two are similar? How do we sort?
-
-```{r notes}
-# agent
-for each agent
-  cl_sat
-  cl_alt
-  for each dyad
-    dep = sum (outcome – cl_alt) / ticks_spent_tog
-    sat = sum (outcome – cl_sat) / ticks_spent_tog
-    
-# global
-ka = 2
-kp = 2
-kj = 0
 
 if dep = positive
   ac = ka/dep
@@ -56,10 +47,11 @@ if dep = negative
   ac = dep/ka
   pc = kp/dep
 
-```
 
-```{r tibble setup}
-N <- 6 # number of agents
+> When sorting for higest sat - what if two are similar? How do we sort?
+
+```{r values setup}
+N <- 12 # number of agents
 initial_dep <- 0.1 # the dependence value all dyads start with
 initial_sat <- 0.1 # the satisfaction value all dyads start with
 
@@ -78,7 +70,7 @@ hangout <- tibble(agent = numeric(), # create empty hangout table
                   to = numeric(), 
                   with = numeric())
 
-sat <- sample(1:10, N^2, replace = TRUE)
+sat <- sample(1:10, N^2, replace = TRUE) # for testing
 
 dyads <- tibble(agent_1 = as.numeric(rep(1:N, each=N)), # create df with dyads and inital values
                 agent_2 = as.numeric(rep(seq(1:N),N)),
@@ -90,41 +82,35 @@ dyads <- dyads %>% filter(agent_1 != agent_2) # Remove dyads with the same agent
 
 ```
 
-```{r test}
-for (agent in invit$agents){ print(agent) }
-
-rows <- sample(nrow(invit))
-random_invit <- invit[rows, ]
-
-for (agent in random_invit$agents){ print(agent) }
-```
 
 ```{r}
+ptm <- proc.time() # start a stopwatch
 while (nrow(invit) != 0) { # while some agents are left in invite-phase
 
-  ############################### Send invites ###################################
+############################### Send invites ###################################
     for (agent in invit$agent){ # each agent sends invites
       choice <- dyads %>% # make a df from dyads
         filter(agent_1 == agent) %>% # only choose current agent
-        filter(!(agent_2 %in% invit)) %>% # remove agents that already have a date (are no longer in invit)
+        filter(agent_2 %in% invit$agent) %>% # remove agents that already have a date (are no longer in invit)
         arrange(desc(sat)) # sort so agent with higest sat is on top #@
         
       invit_agent <- choice$agent_2[1] # select top agent
       agent_index <- which(invit$agent == agent) # get the row number for the current agent in invit
-      invit$to[agent_index] <- invit_agent # in invit set agent choice (might need where() here ?)
+      invit$to[agent_index] <- invit_agent # in invit set agent choice 
     }
 ####################### Check for mutual invites ###############################
     for (agent in invit$agent){ # each agent checks whether they have mutual invites
-      #agent <- 2
       agent_index <- which(invit$agent == agent) # get the row number for the current agent in invit
       invit_agent <- invit$to[agent_index] # the agent i invited
       invit_agent_index <- which(invit$agent == invit_agent) # get the row number for the invit_agent in invit
+        #@ Eroor line
         if (invit$to[invit_agent_index] == agent){ # if the invite from my invit_agent is to me
           invit$date[agent_index] <- TRUE # set that i have a date
           invit$with[agent_index] <- invit_agent # set that it is with the person i invited
         }
     }
 ############################ Update invit df ###################################          
+  test_mutual_invite <- invit
   hangout_dyads <- invit %>% filter(date == TRUE) # select chosen dyads
   hangout <- rbind(hangout, hangout_dyads) # append dyads to hangout df
   invit <- invit %>% filter(date == FALSE)# remove agents with dates from invite
@@ -132,45 +118,50 @@ while (nrow(invit) != 0) { # while some agents are left in invite-phase
   invit <- invit[rows, ] # define new, shuffled invit
 
 ############################ Accept invites ####################################
-    for (agent in invit$agent){
-      agent <- 1
-      a <- agent # annoying workaroud, filter() is confused otherwise
+  #@  are they enforcing invites instead of accepting?
+  for (agent in invit$agent){
       agent_index <- which(invit$agent == agent) # get index of agent in invit
-      if (invit$date[agent_index] == FALSE){ # Only look at agents without a date
-        options <- invit %>% filter(to == a & date == FALSE) # make a df with agents that sent me invites, and are still available
-      
-        if (nrow(options) == 1){ # if i have one option
-          agent_option <- options$agent[1] # the name of the one agent that sent me an invite
-          agent_option_index <- which(invit$agent == agent_option) # index of agent_option
-          invit$date[agent_index] <- TRUE # set that i have a date
-          invit$with[agent_index] <- agent_option # set that it is with the person on my options list
-          invit$date[agent_option_index] <- TRUE # set that other agent has a date
-          invit$with[agent_option_index] <- agent # set that it is with me
-        }
-        
-        if (nrow(options) > 1){ # if i have more than one option
-          choice <- dyads %>% # make a df from dyads
-          filter(agent_1 == agent) %>% # only choose current agent
-          filter(!(agent_2 %in% options)) %>% # only choose agents that i have as options
-          arrange(desc(sat)) # sort so agent with highest sat is on top #@
           
-          agent_choice <- choice$agent[1] # the name of the top agent
-          agent_choice_index <- which(invit$agent == agent_choice) # index of agent_choice
-          invit$date[agent_index] <- TRUE # set that i have a date
-          invit$with[agent_index] <- agent_choice # set that it is with the top agent
-          invit$date[agent_choice_index] <- TRUE # set that other agent has a date
-          invit$with[agent_choice_index] <- agent # set that it is with me
-        }
-      }
+          if (invit$date[agent_index] == FALSE){ # Only look at agents without a date
+            a <- agent # annoying workaroud, filter() is confused otherwise
+            options <- invit %>% filter(to == a & date == FALSE) # make a df with agents that sent me invites, and are still available
+          
+                if (nrow(options) == 1){ # if i have one option
+                  agent_option <- options$agent[1] # the name of the one agent that sent me an invite
+                  agent_option_index <- which(invit$agent == agent_option) # index of agent_option
+                  invit$date[agent_index] <- TRUE # set that i have a date
+                  invit$with[agent_index] <- agent_option # set that it is with the person on my options list
+                  invit$date[agent_option_index] <- TRUE # set that other agent has a date
+                  invit$with[agent_option_index] <- agent # set that it is with me
+                }
+                
+                if (nrow(options) > 1){ # if i have more than one option
+                  choice <- dyads %>% # make a df from dyads
+                  filter(agent_1 == agent) %>% # only choose current agent
+                  filter(agent_2 %in% options$agent) %>% # only choose agents that i have as options
+                  arrange(desc(sat)) # sort so agent with highest sat is on top #@
+                  
+                  agent_choice <- choice$agent_2[1] # the name of the top agent
+                  agent_choice_index <- which(invit$agent == agent_choice) # index of agent_choice
+                  invit$date[agent_index] <- TRUE # set that i have  a date
+                  invit$with[agent_index] <- agent_choice # set that it is with the top agent
+                  invit$date[agent_choice_index] <- TRUE # set that other agent has a date
+                  invit$with[agent_choice_index] <- agent # set that it is with me
+                }
+          }
     }
 
 ############################ Update invit df ###################################          
   hangout_dyads <- invit %>% filter(date == TRUE) # select chosen dyads
   hangout <- rbind(hangout, hangout_dyads) # append dyads to hangout df
   invit <- invit %>% filter(date == FALSE)# remove agents with dates from invite
+  #invit$to <- as.numeric(NA) # clear invites
 
-print("loop")
+i <- 1
+print(i)
+i <- i + 1
 } # end of while loop
+proc.time() - ptm # get stopwatch time
 ```
 
 ```{r}
