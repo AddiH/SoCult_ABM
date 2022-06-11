@@ -1,0 +1,33 @@
+---
+title: "Untitled"
+author: "Astrid Elmann Hansen"
+date: '2022-06-11'
+output: html_document
+---
+
+```{r}
+pacman::p_load(tidyverse)
+source("dates.R")
+```
+
+```{r}
+N <- 10 # number of agents
+
+initial_dep <- 0.1 # the dependence value all dyads start with
+initial_sat <- 0.1 # the satisfaction value all dyads start with
+
+sat <- sample(1:10, N^2, replace = TRUE) # for testing
+
+dyads <- tibble(agent_1 = as.numeric(rep(1:N, each=N)), # create df with dyads and inital values
+                agent_2 = as.numeric(rep(seq(1:N),N)),
+                sat = sat,
+                #sat = as.numeric(rep(initial_sat,N^2)),
+                dep = as.numeric(rep(initial_dep,N^2)))
+  
+dyads <- dyads %>% filter(agent_1 != agent_2) # Remove dyads with the same agent twice
+```
+
+```{r}
+df <- sat.dates(N = N, dyads = dyads)
+```
+

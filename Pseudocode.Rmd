@@ -51,7 +51,7 @@ if dep = negative
 > When sorting for higest sat - what if two are similar? How do we sort?
 
 ```{r values setup}
-N <- 12 # number of agents
+N <- 100 # number of agents
 initial_dep <- 0.1 # the dependence value all dyads start with
 initial_sat <- 0.1 # the satisfaction value all dyads start with
 
@@ -156,10 +156,6 @@ while (nrow(invit) != 0) { # while some agents are left in invite-phase
   hangout <- rbind(hangout, hangout_dyads) # append dyads to hangout df
   invit <- invit %>% filter(date == FALSE)# remove agents with dates from invite
   #invit$to <- as.numeric(NA) # clear invites
-
-i <- 1
-print(i)
-i <- i + 1
 } # end of while loop
 proc.time() - ptm # get stopwatch time
 ```
