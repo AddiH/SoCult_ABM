@@ -1,5 +1,5 @@
 ---
-title: "Untitled"
+title: "ABM"
 author: "Astrid Elmann Hansen"
 date: '2022-06-11'
 output: html_document
@@ -28,6 +28,8 @@ dyads <- dyads %>% filter(agent_1 != agent_2) # Remove dyads with the same agent
 ```
 
 ```{r}
+ptm <- proc.time() # start a stopwatch
 df <- sat.dates(N = N, dyads = dyads)
+proc.time() - ptm # get stopwatch time
 ```
 

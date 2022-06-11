@@ -1,5 +1,7 @@
-################################################################################
-# These functions takes the number of agents, the dyad df, and returns dyads for date phase. 
+################################################################################################
+# These functions takes the number of agents and the dyad df, and returns dyads for date phase
+################################################################################################
+
 
 sat.dates <- function(N, dyads) {
   
@@ -30,18 +32,17 @@ while (nrow(invit) != 0) { # while some agents are left in invite-phase
   for (agent in invit$agent){ # each agent checks whether they have mutual invites
     agent_index <- which(invit$agent == agent) # get the row number for the current agent in invit
     invit_agent <- invit$to[agent_index] # the agent i invited
-    invit_agent_index <- which(invit$agent == invit_agent) # get the row number for the invit_agent in invit
-    if (invit$to[invit_agent_index] == agent){ # if the invite from my invit_agent is to me
+    invit_agent_index <- which(invit$agent == invit_agent) # get the row number for the invited agent in invit
+    if (invit$to[invit_agent_index] == agent){ # if the invite from my invited agent is to me
       invit$date[agent_index] <- TRUE # set that i have a date
       invit$with[agent_index] <- invit_agent # set that it is with the person i invited
     }
   }
   ############################ Update invit df ###################################          
-  test_mutual_invite <- invit
-  hangout_dyads <- invit %>% filter(date == TRUE) # select chosen dyads
+  hangout_dyads <- invit %>% filter(date == TRUE) # select set dyads
   hangout <- rbind(hangout, hangout_dyads) # append dyads to hangout df
-  invit <- invit %>% filter(date == FALSE)# remove agents with dates from invite
-  rows <- sample(nrow(invit))
+  invit <- invit %>% filter(date == FALSE) # remove agents with dates from invit
+  rows <- sample(nrow(invit)) # for making random invit
   invit <- invit[rows, ] # define new, shuffled invit
   
   ############################ Accept invites ####################################
@@ -78,12 +79,13 @@ while (nrow(invit) != 0) { # while some agents are left in invite-phase
   }
   
   ############################ Update invit df ###################################          
-  hangout_dyads <- invit %>% filter(date == TRUE) # select chosen dyads
+  hangout_dyads <- invit %>% filter(date == TRUE) # select set dyads
   hangout <- rbind(hangout, hangout_dyads) # append dyads to hangout df
   invit <- invit %>% filter(date == FALSE)# remove agents with dates from invite
 
 } # end of while loop
-  hangout <- hangout %>% 
+  
+  hangout <- hangout %>% # clean up df before returning
     select(-c(date,to)) %>% 
     arrange(agent) %>% 
     rename(agent_1 = agent, agent_2 = with)
