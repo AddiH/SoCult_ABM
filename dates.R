@@ -3,7 +3,7 @@
 ################################################################################################
 
 
-sat.dates <- function(N, dyads) {
+dates <- function(N, dyads, sort) {
   
   hangout <- tibble(agent = numeric(), # create empty hangout table
                     date = logical(), 
@@ -21,8 +21,8 @@ while (nrow(invit) != 0) { # while some agents are left in invite-phase
   for (agent in invit$agent){ # each agent sends invites
     choice <- dyads %>% # make a df from dyads
       filter(agent_1 == agent) %>% # only choose current agent
-      filter(agent_2 %in% invit$agent) %>% # remove agents that already have a date (are no longer in invit)
-      arrange(desc(sat)) # sort so agent with higest sat is on top #@
+      filter(agent_2 %in% invit$agent) %>%  # remove agents that already have a date (are no longer in invit)
+      arrange(desc(.data[[sort]])) # sort so agent with higest sort is on top
     
     invit_agent <- choice$agent_2[1] # select top agent
     agent_index <- which(invit$agent == agent) # get the row number for the current agent in invit
@@ -66,7 +66,7 @@ while (nrow(invit) != 0) { # while some agents are left in invite-phase
         choice <- dyads %>% # make a df from dyads
           filter(agent_1 == agent) %>% # only choose current agent
           filter(agent_2 %in% options$agent) %>% # only choose agents that i have as options
-          arrange(desc(sat)) # sort so agent with highest sat is on top #@
+          arrange(desc(.data[[sort]])) # sort so agent with highest sort is on top 
         
         agent_choice <- choice$agent_2[1] # the name of the top agent
         agent_choice_index <- which(invit$agent == agent_choice) # index of agent_choice
