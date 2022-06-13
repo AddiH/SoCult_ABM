@@ -25,11 +25,13 @@ dyads <- tibble(agent_1 = as.numeric(rep(1:N, each=N)), # create df with dyads a
                 dep = as.numeric(rep(initial_dep,N^2)))
   
 dyads <- dyads %>% filter(agent_1 != agent_2) # Remove dyads with the same agent twice
+
+
 ```
 
 ```{r}
 ptm <- proc.time() # start a stopwatch
-df <- sat.dates(N = N, dyads = dyads)
+dates <- dates(N = N, dyads = dyads, sort = "sat")
 proc.time() - ptm # get stopwatch time
 ```
 
