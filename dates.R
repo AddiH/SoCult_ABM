@@ -1,5 +1,6 @@
 ################################################################################################
-# These functions takes the number of agents and the dyad df, and returns dyads for date phase
+# These functions takes the number of agents, the dyad df and a sort option (sat or commit), 
+# and returns dyads for date phase
 ################################################################################################
 
 
@@ -22,9 +23,11 @@ while (nrow(invit) != 0) { # while some agents are left in invite-phase
     choice <- dyads %>% # make a df from dyads
       filter(agent_1 == agent) %>% # only choose current agent
       filter(agent_2 %in% invit$agent) %>%  # remove agents that already have a date (are no longer in invit)
-      arrange(desc(.data[[sort]])) # sort so agent with higest sort is on top
+      arrange(desc(.data[[sort]])) %>%  # sort so agent with higest sort is on top
+      filter(.data[[sort]] == .data[[sort]][1]) # choose all agents that have the same sort as the top agent
     
-    invit_agent <- choice$agent_2[1] # select top agent
+    n <- sample(1:nrow(choice),1) # 1 random number between 1 and the number of rows in choice
+    invit_agent <- choice$agent_2[n] # select random agent from choice
     agent_index <- which(invit$agent == agent) # get the row number for the current agent in invit
     invit$to[agent_index] <- invit_agent # in invit set agent choice 
   }
@@ -66,9 +69,11 @@ while (nrow(invit) != 0) { # while some agents are left in invite-phase
         choice <- dyads %>% # make a df from dyads
           filter(agent_1 == agent) %>% # only choose current agent
           filter(agent_2 %in% options$agent) %>% # only choose agents that i have as options
-          arrange(desc(.data[[sort]])) # sort so agent with highest sort is on top 
+          arrange(desc(.data[[sort]])) %>%  # sort so agent with highest sort is on top 
+          filter(.data[[sort]] == .data[[sort]][1]) # choose all agents that have the same sort as the top agent
         
-        agent_choice <- choice$agent_2[1] # the name of the top agent
+        n <- sample(1:nrow(choice),1) # 1 random number between 1 and the number of rows in choice
+        agent_choice <- choice$agent_2[n] # the name of the top agent
         agent_choice_index <- which(invit$agent == agent_choice) # index of agent_choice
         invit$date[agent_index] <- TRUE # set that i have  a date
         invit$with[agent_index] <- agent_choice # set that it is with the top agent
