@@ -50,36 +50,14 @@ if dep = negative
 
 
 > When sorting for higest sat - what if two are similar? How do we sort?
+> Simple: random choice
 
-```{r values setup}
-N <- 100 # number of agents
-initial_dep <- 0.1 # the dependence value all dyads start with
-initial_sat <- 0.1 # the satisfaction value all dyads start with
-
-```
-
-
-```{r tibble setup}
-
-sat <- sample(1:10, N^2, replace = TRUE) # for testing
-
-dyads <- tibble(agent_1 = as.numeric(rep(1:N, each=N)), # create df with dyads and inital values
-                agent_2 = as.numeric(rep(seq(1:N),N)),
-                sat = sat,
-                #sat = as.numeric(rep(initial_sat,N^2)),
-                dep = as.numeric(rep(initial_dep,N^2)))
-  
-dyads <- dyads %>% filter(agent_1 != agent_2) # Remove dyads with the same agent twice
-
-```
 
 
 ```{r}
 
-```
+#GENERATE.MATRIX()
 
-
-```{r}
 # Hangout phase
 for each dyad
   # generate matrix (a1b1, a2b1, a1b2, a2b2)
@@ -92,3 +70,11 @@ for each dyad
     choice <- higest()
   
 ```
+
+```{r}
+# OWN.MAX
+
+
+
+```
+

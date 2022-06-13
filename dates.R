@@ -3,7 +3,6 @@
 # and returns dyads for date phase
 ################################################################################################
 
-
 dates <- function(N, dyads, sort) {
   
   hangout <- tibble(agent = numeric(), # create empty hangout table
@@ -93,7 +92,7 @@ while (nrow(invit) != 0) { # while some agents are left in invite-phase
   hangout <- hangout %>% # clean up df before returning
     select(-c(date,to)) %>% 
     arrange(agent) %>% 
-    rename(agent_1 = agent, agent_2 = with)
+    rename(A = agent, B = with)
   
   return(hangout)
 }
