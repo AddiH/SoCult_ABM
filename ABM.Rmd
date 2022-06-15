@@ -10,70 +10,101 @@ pacman::p_load(tidyverse)
 source("functions/dates.R")
 source("functions/generate_matrix.R")
 source("functions/matrix_choice.R")
-source("functions/get_box.R")
+source("functions/get_outcome.R")
 ```
 
-```{r}
-
+```{r setup values}
 ka <- 2
 kp <- 2
 
-N <- 2 # number of agents
+N <- 100 # number of agents
 
 initial_dep <- 0.1 # the dependence value all dyads start with
 initial_sat <- 0.1 # the satisfaction value all dyads start with
 
+sort <- "sat" # sort by sat or commit?
+
+ticks <- 10 # how many ticks to run
+```
+
+
+```{r setup dyads}
 sat <- sample(-10:10, N^2, replace = TRUE) # for testing
 dep <- sample(-10:10, N^2, replace = TRUE) # for testing
+
 dep[dep==0] <- 0.1 # lololol
 
 dyads <- tibble(agent_1 = as.numeric(rep(1:N, each=N)), # create df with dyads and inital values
                 agent_2 = as.numeric(rep(seq(1:N),N)),
                 sat = sat,
-                dep = dep)
+                dep = dep,
+                ticks_tog = rep(0,N^2))
                 #sat = as.numeric(rep(initial_sat,N^2)),
                 #dep = as.numeric(rep(initial_dep,N^2)))
   
 dyads <- dyads %>% filter(agent_1 != agent_2) # Remove dyads with the same agent twice
+```
 
-sort <- "sat"
+```{r setup traits}
+traits <- tibble(agent = as.numeric(seq(1:N)),
+                 cl_alt = sample(-10:10, N, replace = TRUE),
+                 cl_sat = sample(-10:10, N, replace = TRUE))
 ```
 
 
-```{r}
-line <- c(1,2,1,2,1,1,2,2)
+```{r setup emtpy matrix}
 agent <- c("A","A","A","A","B","B","B","B")
 box <- c(1,2,3,4,1,2,3,4)
 
-empty_matrix <- tibble( line = line,
-                        agent = agent,
+empty_matrix <- tibble( agent = agent,
                         box = box,
                         outcome = as.numeric(rep(0,8)))
 ```
 
 ```{r}
 ptm <- proc.time() # start a stopwatch
-dates <- dates(N = N, dyads = dyads, sort = sort)
-proc.time() - ptm # get stopwatch time
-```
-```{r}
-# i <- 1
-# A = dates$A[i]
-# B = dates$B[i]
-# matrix = empty_matrix
 
-#@ remove line from empty matrix
+for (tick in 1:ticks){
 
-for (i in 1:nrow(dates)){ # for every dyad
-  
-  m <- generate.matrix(A = dates$A[i], B = dates$B[i], matrix = empty_matrix, dyads = dyads, ka = ka, kp = kp) # generate matrix
-  
-  A_choice <- own.max(agent = "A", matrix = m) # each agent chooses
-  B_choice <- own.max(agent = "B", matrix = m)
-  
-  box <- get.box(A_choice = A_choice, B_choice = B_choice) # find chosen box
+hangout <- dates(N = N, dyads = dyads, sort = sort)
 
+for (i in 1:nrow(hangout)){ # for every dyad
+  
+  A <- hangout$A[i] # get the "name" of each agent
+  B <- hangout$B[i]
+  
+  matrix <- generate.matrix(A = A, B = B, matrix = empty_matrix, dyads = dyads, ka = ka, kp = kp) # generate matrix
+  
+  A_choice <- own.max(agent = "A", matrix = matrix) # each agent chooses
+  B_choice <- own.max(agent = "B", matrix = matrix)
+
+  A_outcome <- get.outcome(A_choice = A_choice, B_choice = B_choice, matrix = matrix, agent = "A") # get outcome
+  B_outcome <- get.outcome(A_choice = A_choice, B_choice = B_choice, matrix = matrix, agent = "B") 
+
+  A_B <- which(dyads$agent_1 == A & dyads$agent_2 == B) # find the row no for the relevant dyad
+
+  dyads$ticks_tog[A_B] <- dyads$ticks_tog[A_B] + 1 # add a tick to ticks spent together
+  
+  dyads$sat[A_B] <- dyads$sat[A_B] + ((A_outcome - traits$cl_sat[A]) # update sat
+                                        /dyads$ticks_tog[A_B])
+  
+  dyads$dep[A_B] <- dyads$dep[A_B] + ((A_outcome - traits$cl_alt[A]) # update dep
+                                        /dyads$ticks_tog[A_B])
+  
+  B_A <- which(dyads$agent_1 == B & dyads$agent_2 == A) # find the row no for the relevant dyad
+  
+  dyads$ticks_tog[B_A] <- dyads$ticks_tog[B_A] + 1 # add a tick to ticks spent together
+  
+  dyads$sat[B_A] <- dyads$sat[B_A] + ((A_outcome - traits$cl_sat[B]) # update sat
+                                        /dyads$ticks_tog[B_A])
+  
+  dyads$dep[B_A] <- dyads$dep[B_A] + ((A_outcome - traits$cl_alt[B]) # update dep
+                                        /dyads$ticks_tog[B_A])
 }
+print(tick)
+}
+
+proc.time() - ptm # get stopwatch time
 ```
 
 
