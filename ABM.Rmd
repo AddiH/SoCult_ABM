@@ -8,16 +8,22 @@ output: html_document
 ```{r}
 pacman::p_load(tidyverse)
 source("dates.R")
+source("generate_matrix.R")
 ```
 
 ```{r}
+
+ka <- 2
+kp <- 2
+
 N <- 10 # number of agents
 
 initial_dep <- 0.1 # the dependence value all dyads start with
 initial_sat <- 0.1 # the satisfaction value all dyads start with
 
-sat <- sample(1:10, N^2, replace = TRUE) # for testing
-dep <- sample(1:10, N^2, replace = TRUE) # for testing
+sat <- sample(-10:10, N^2, replace = TRUE) # for testing
+dep <- sample(-10:10, N^2, replace = TRUE) # for testing
+dep[dep==0] <- 0.1 # lololol
 
 dyads <- tibble(agent_1 = as.numeric(rep(1:N, each=N)), # create df with dyads and inital values
                 agent_2 = as.numeric(rep(seq(1:N),N)),
@@ -27,11 +33,31 @@ dyads <- tibble(agent_1 = as.numeric(rep(1:N, each=N)), # create df with dyads a
                 #dep = as.numeric(rep(initial_dep,N^2)))
   
 dyads <- dyads %>% filter(agent_1 != agent_2) # Remove dyads with the same agent twice
+
+sort <- "sat"
+```
+
+
+```{r}
+line <- c(1,2,1,2,1,1,2,2)
+agent <- c("A","A","A","A","B","B","B","B")
+box <- c(1,2,3,4,1,2,3,4)
+
+empty_matrix <- tibble( line = line,
+                        agent = agent,
+                        box = box,
+                        outcome = as.numeric(rep(0,8)))
 ```
 
 ```{r}
 ptm <- proc.time() # start a stopwatch
-dates <- dates(N = N, dyads = dyads, sort = "sat")
+dates <- dates(N = N, dyads = dyads, sort = sort)
 proc.time() - ptm # get stopwatch time
 ```
+```{r}
+for (i in 1:N/2){ # for evry dyad
+  m <- generate.matrix(A = dates$A[i], B = dates$B[i], matrix = empty_matrix, dyads = dyads, ka = ka, kp = kp) # generate matrix
+}
+```
+
 

@@ -94,5 +94,7 @@ while (nrow(invit) != 0) { # while some agents are left in invite-phase
     arrange(agent) %>% 
     rename(A = agent, B = with)
   
+  hangout <- hangout[!duplicated(data.frame(list(do.call(pmin, hangout),do.call(pmax, hangout)))),] # removing duplicate pairs
+  
   return(hangout)
 }
