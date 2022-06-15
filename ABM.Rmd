@@ -7,8 +7,10 @@ output: html_document
 
 ```{r}
 pacman::p_load(tidyverse)
-source("dates.R")
-source("generate_matrix.R")
+source("functions/dates.R")
+source("functions/generate_matrix.R")
+source("functions/matrix_choice.R")
+source("functions/get_box.R")
 ```
 
 ```{r}
@@ -16,7 +18,7 @@ source("generate_matrix.R")
 ka <- 2
 kp <- 2
 
-N <- 10 # number of agents
+N <- 2 # number of agents
 
 initial_dep <- 0.1 # the dependence value all dyads start with
 initial_sat <- 0.1 # the satisfaction value all dyads start with
@@ -55,8 +57,22 @@ dates <- dates(N = N, dyads = dyads, sort = sort)
 proc.time() - ptm # get stopwatch time
 ```
 ```{r}
-for (i in 1:N/2){ # for evry dyad
+# i <- 1
+# A = dates$A[i]
+# B = dates$B[i]
+# matrix = empty_matrix
+
+#@ remove line from empty matrix
+
+for (i in 1:nrow(dates)){ # for every dyad
+  
   m <- generate.matrix(A = dates$A[i], B = dates$B[i], matrix = empty_matrix, dyads = dyads, ka = ka, kp = kp) # generate matrix
+  
+  A_choice <- own.max(agent = "A", matrix = m) # each agent chooses
+  B_choice <- own.max(agent = "B", matrix = m)
+  
+  box <- get.box(A_choice = A_choice, B_choice = B_choice) # find chosen box
+
 }
 ```
 
