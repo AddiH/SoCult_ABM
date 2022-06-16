@@ -5,7 +5,6 @@ date: '2022-06-11'
 output: html_document
 ---
 
-invit
 
 > Issues:
 
@@ -54,6 +53,7 @@ if dep = negative
 ```{r}
 pacman::p_load(tidyverse)
 source("functions/dates.R")
+source("functions/invitations.R")
 source("functions/generate_matrix.R")
 source("functions/matrix_choice.R")
 source("functions/get_outcome.R")
