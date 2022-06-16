@@ -9,6 +9,44 @@ output: html_document
 
 No penalty for not cooperating
 Agents have no reason to prioritize more than one person
+When sorting for higest sat - what if two are similar? How do we sort?
+> Simple: random choice
+
+
+# Pure interdependence theory
+
+All agents are connected
+
+Friendships don't deteriorate
+
+Agents can't be alone
+
+cl_sat and cl_alt traits are constant pr. agent and independent of dyads
+
+dep = sum (outcome – cl_alt) / ticks_spent_tog
+
+sat = sum (outcome – cl_sat) / ticks_spent_tog
+    
+ka, kp and kj are constant and identical for all agents
+
+ka = 2
+kp = 2
+kj = 0
+
+All agents opt to choose OwnMax in matrices
+
+Joint control = 0
+
+Uden intercept
+
+if dep = positive
+  ac = ka/dep
+  pc = dep/kp
+  
+if dep = negative
+  ac = dep/ka
+  pc = kp/dep
+
 
 
 ```{r}
