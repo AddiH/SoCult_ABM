@@ -65,13 +65,15 @@ kp <- 2
 
 N <- 20 # number of agents
 
-initial_dep <- 0.1 # the dependence value all dyads start with
-initial_sat <- 0.1 # the satisfaction value all dyads start with
-
 sort <- "sat" # sort by sat or commit?
-invite_function <-"prob.invite"
 
-ticks <- 20 # how many ticks to run
+invite_function <-"prob.invite" # which invite function to use?
+
+viz <- TRUE # to viz or not to viz
+
+ticks <- 100 # how many ticks to run
+
+weight_division <- 6
 ```
 
 
@@ -159,26 +161,62 @@ for (i in 1:nrow(hangout)){ # for every dyad
                     dyads$dep[B_A] <- dyads$dep[B_A] + ((A_outcome - traits$cl_alt[B]) # update dep
                                                           /dyads$ticks_tog[B_A])
 }
+
 print(sprintf("Tick %s of %s", tick, ticks))
+
+############################################## Visualising ####################################################
+
+if (viz == TRUE) {
+  
+        dyads_viz <- dyads %>% 
+          mutate(weight = ticks_tog) %>% 
+          select(agent_1, agent_2, weight) 
+        
+        tictog <- graph_from_data_frame(dyads_viz, directed = FALSE, vertices = NULL) # make into igraph object
+        
+        tictog <- simplify(tictog) # remove duplicate edges
+        
+        col <- rainbow(20)
+        
+        filename <- sprintf("plots/ticks_tog/%s.jpeg", tick)
+        
+        jpeg(filename, width=20, height=20, units="cm", res=600)  # open doc
+        plot(tictog, 
+             vertex.color = col,
+             vertex.size = 10,
+             vertex.label = NA,
+             layout = layout_on_grid(tictog),
+             edge.width = E(tictog)$weight/weight_division)
+        dev.off() # close doc
+        
+}
+
 }
 
 proc.time() - ptm # get stopwatch time
 ```
 
+
 ```{r}
-dyads_viz <- dyads %>% 
-  filter(ticks_tog != 0) %>% 
-  select(agent_1, agent_2, ticks_tog)
-
-tictog <- graph_from_data_frame(dyads_viz, directed = FALSE)
-
-coords <- layout.fruchterman.reingold(tictog)
-
-plot(tictog,
-     vertex.size = 20,
-     edge.width = 1,
-     layout = coords,
-     edge.arrow.size = NULL)
-
+        dyads_viz <- dyads %>% 
+          mutate(weight = ticks_tog) %>% 
+          select(agent_1, agent_2, weight) 
+        
+        tictog <- graph_from_data_frame(dyads_viz, directed = FALSE, vertices = NULL) # make into igraph object
+        
+        tictog <- simplify(tictog) # remove duplicate edges
+        
+        col <- rainbow(20)
+        
+        filename <- sprintf("ticks_tog_%s_ticks.jpeg", ticks)
+        
+        #jpeg(filename, width=20, height=20, units="cm", res=600)  # open doc
+        plot(tictog, 
+             vertex.color = col,
+             vertex.size = 10,
+             vertex.label = NA,
+             layout = layout_on_sphere(tictog),
+             edge.width = E(tictog)$weight/30)
+        #dev.off() # close doc
 ```
 
