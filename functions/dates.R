@@ -3,7 +3,7 @@
 # and returns dyads for date phase
 ################################################################################################
 
-dates <- function(N, dyads, sort) {
+dates <- function(N, dyads, sort, invite_function) {
   
   hangout <- tibble(agent = numeric(), # create empty hangout table
                     date = logical(), 
@@ -18,18 +18,12 @@ dates <- function(N, dyads, sort) {
 while (nrow(invit) != 0) { # while some agents are left in invite-phase
   
   ############################### Send invites ###################################
-  for (agent in invit$agent){ # each agent sends invites
-    choice <- dyads %>% # make a df from dyads
-      filter(agent_1 == agent) %>% # only choose current agent
-      filter(agent_2 %in% invit$agent) %>%  # remove agents that already have a date (are no longer in invit)
-      arrange(desc(.data[[sort]])) %>%  # sort so agent with higest sort is on top
-      filter(.data[[sort]] == .data[[sort]][1]) # choose all agents that have the same sort as the top agent
-    
-    n <- sample(1:nrow(choice),1) # 1 random number between 1 and the number of rows in choice
-    invit_agent <- choice$agent_2[n] # select random agent from choice
-    agent_index <- which(invit$agent == agent) # get the row number for the current agent in invit
-    invit$to[agent_index] <- invit_agent # in invit set agent choice 
+  if (invite_function == "simple.invite"){
+    invit <- simple.invite(invit = invit, dyads = dyads, sort = sort) 
+  } else if (invite_function == "prob.invite"){
+    invit <- prob.invite(invit = invit, dyads = dyads, sort = sort) 
   }
+
   ####################### Check for mutual invites ###############################
   for (agent in invit$agent){ # each agent checks whether they have mutual invites
     agent_index <- which(invit$agent == agent) # get the row number for the current agent in invit

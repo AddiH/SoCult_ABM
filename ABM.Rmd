@@ -5,6 +5,7 @@ date: '2022-06-11'
 output: html_document
 ---
 
+
 > Issues:
 
 No penalty for not cooperating
@@ -50,8 +51,9 @@ if dep = negative
 
 
 ```{r}
-pacman::p_load(tidyverse)
+pacman::p_load(tidyverse, igraph)
 source("functions/dates.R")
+source("functions/invitations.R")
 source("functions/generate_matrix.R")
 source("functions/matrix_choice.R")
 source("functions/get_outcome.R")
@@ -61,12 +63,13 @@ source("functions/get_outcome.R")
 ka <- 2
 kp <- 2
 
-N <- 10 # number of agents
+N <- 20 # number of agents
 
 initial_dep <- 0.1 # the dependence value all dyads start with
 initial_sat <- 0.1 # the satisfaction value all dyads start with
 
 sort <- "sat" # sort by sat or commit?
+invite_function <-"prob.invite"
 
 ticks <- 20 # how many ticks to run
 ```
@@ -114,7 +117,7 @@ ptm <- proc.time() # start a stopwatch
 
 for (tick in 1:ticks){
 
-hangout <- dates(N = N, dyads = dyads, sort = sort) # set up date pairs
+hangout <- dates(N = N, dyads = dyads, sort = sort, invite_function = invite_function) # set up date pairs
 
 for (i in 1:nrow(hangout)){ # for every dyad
   
@@ -161,3 +164,21 @@ print(sprintf("Tick %s of %s", tick, ticks))
 
 proc.time() - ptm # get stopwatch time
 ```
+
+```{r}
+dyads_viz <- dyads %>% 
+  filter(ticks_tog != 0) %>% 
+  select(agent_1, agent_2, ticks_tog)
+
+tictog <- graph_from_data_frame(dyads_viz, directed = FALSE)
+
+coords <- layout.fruchterman.reingold(tictog)
+
+plot(tictog,
+     vertex.size = 20,
+     edge.width = 1,
+     layout = coords,
+     edge.arrow.size = NULL)
+
+```
+
