@@ -3,7 +3,7 @@
 # and returns dyads for date phase
 ################################################################################################
 
-dates <- function(N, dyads, sort) {
+dates <- function(N, dyads, sort, invite_function) {
   
   hangout <- tibble(agent = numeric(), # create empty hangout table
                     date = logical(), 
@@ -18,7 +18,11 @@ dates <- function(N, dyads, sort) {
 while (nrow(invit) != 0) { # while some agents are left in invite-phase
   
   ############################### Send invites ###################################
-  invit <- simple.sort(invit = invit, dyads = dyads, sort = sort) 
+  if (invite_function == "simple.invite"){
+    invit <- simple.invite(invit = invit, dyads = dyads, sort = sort) 
+  } else if (invite_function == "prob.invite"){
+    invit <- prob.invite(invit = invit, dyads = dyads, sort = sort) 
+  }
 
   ####################### Check for mutual invites ###############################
   for (agent in invit$agent){ # each agent checks whether they have mutual invites
