@@ -20,13 +20,10 @@ When sorting for higest sat - what if two are similar? How do we sort?
 > evt. cost penalty på ikke at arbejde sammen
 
 TODO
-Viz in own file - loads in his_dyad
-Update outcomes to function
 Add intercept + cost penalty
-Make his_dyads
 Viz sat + dep
-Git pull ignore plots
 Add choice from type (own.etc)
+Add commit
 
 
 # Pure interdependence theory
@@ -65,7 +62,7 @@ source("functions/dates.R")
 source("functions/invitations.R")
 source("functions/generate_matrix.R")
 source("functions/matrix_choice.R")
-source("functions/get_outcome.R")
+source("functions/update_dyads.R")
 empty_matrix <- read_csv("functions/empty_matrix.csv")
 ```
 
@@ -77,7 +74,7 @@ N <- 10 # number of agents
 
 sort <- "sat" # sort by sat or commit?
 
-invite_function <-"prob.invite" # which invite function to use?
+invite_function <-"prob.invite" # prob.invite or simple.invite?
 
 ticks <- 10 # how many ticks to run
 
@@ -114,7 +111,7 @@ traits <- tibble(agent = as.numeric(seq(1:N)),
 ```
 
 ```{r}
-ptm <- proc.time() # start a stopwatch
+start <- proc.time() # start a stopwatch
 
 for (tick in 1:ticks){
 
@@ -125,52 +122,25 @@ for (i in 1:nrow(hangout)){ # for every dyad
   A <- hangout$A[i] # get the "name" of each agent
   B <- hangout$B[i]
   
-  matrix <- generate.matrix(A = A, B = B, matrix = empty_matrix, dyads = dyads, ka = ka, kp = kp) # generate matrix
+  matrix <- generate.matrix(A = A, B = B, matrix = empty_matrix, 
+                            dyads = dyads, ka = ka, kp = kp) # generate matrix
   
   A_choice <- own.max(agent = "A", matrix = matrix) # each agent chooses
   B_choice <- own.max(agent = "B", matrix = matrix)
 
-  
-  
-  # update sat and dep for A
-  
-      A_outcome <- get.outcome(A_choice = A_choice, B_choice = B_choice, matrix = matrix, agent = "A") # get outcome
-      B_outcome <- get.outcome(A_choice = A_choice, B_choice = B_choice, matrix = matrix, agent = "B") # get outcome
-    
-      
-############ Make into function##########################
-      A_B <- which(dyads$agent_1 == A & dyads$agent_2 == B) # find the row no for the relevant dyad
-    
-      dyads$ticks_tog[A_B] <- dyads$ticks_tog[A_B] + 1 # add a tick to ticks spent together
-      
-      dyads$sat[A_B] <- dyads$sat[A_B] + ((A_outcome - traits$cl_sat[A]) # update sat
-                                            /dyads$ticks_tog[A_B])
-      
-      dyads$dep[A_B] <- dyads$dep[A_B] + ((A_outcome - traits$cl_alt[A]) # update dep
-                                            /dyads$ticks_tog[A_B])
-      
-  # repeat for B
-
-      B_A <- which(dyads$agent_1 == B & dyads$agent_2 == A) # find the row no for the relevant dyad
-      
-      dyads$ticks_tog[B_A] <- dyads$ticks_tog[B_A] + 1 # add a tick to ticks spent together
-      
-      dyads$sat[B_A] <- dyads$sat[B_A] + ((A_outcome - traits$cl_sat[B]) # update sat
-                                            /dyads$ticks_tog[B_A])
-      
-      dyads$dep[B_A] <- dyads$dep[B_A] + ((A_outcome - traits$cl_alt[B]) # update dep
-                                            /dyads$ticks_tog[B_A])
+  dyads <- update.dyads(A = A, B = B, A_choice = A_choice, B_choice = B_choice, 
+                        matrix = matrix, dyads = dyads) # update dyads
 }
 
-dyads_tick <- dyads %>% mutate(tick = tick) # history dyads
+dyads_tick <- dyads %>% mutate(tick = tick) # for history dyads
 dyads_his <- bind_rows(dyads_his, dyads_tick) # add this tick dyad to dyad_his
 dyads <- dyads %>% mutate(outcome = 0) # reset outcomes
   
 print(sprintf("Tick %s of %s", tick, ticks))
 
 }
-
-proc.time() - ptm # get stopwatch time
+write_csv(dyads_his, "dyads_his.csv")
+proc.time() - start # get stopwatch time
 ```
 
 
