@@ -3,30 +3,11 @@ title: "ABM"
 author: "Astrid Elmann Hansen"
 date: '2022-06-11'
 output: html_document
+editor_options: 
+  markdown: 
+    wrap: 72
 ---
-
-
-> Issues:
-
-No penalty for not cooperating
-Agents have no reason to prioritize more than one person
-When sorting for higest sat - what if two are similar? How do we sort?
-> Simple: random choice
-
-
-
-
-> intercept, 4 forskellige "grundtyper" arbejd samme imod etc eller random evt. kod begge dele
-> evt. cost penalty på ikke at arbejde sammen
-
-TODO
-Add intercept + cost penalty
-Viz sat + dep
-Add choice from type (own.etc)
-Add commit
-
-
-# Pure interdependence theory
+**Format**
 
 All agents are connected
 
@@ -34,25 +15,54 @@ Friendships don't deteriorate
 
 Agents can't be alone
 
-ka, kp and kj are constant and identical for all agents
+No joint action in matrix
+
+ka and kp are constant and identical for all agents
 
 cl_sat and cl_alt traits are constant pr. agent and independent of dyads
 
-dep = dep + ((outcome – cl_alt) / ticks_spent_tog)
 
-sat = sat + ((outcome – cl_sat) / ticks_spent_tog)
-    
-ka = 2
-kp = 2
-kj = 0
+**Issues**
 
-if dep = positive
-  ac = ka/dep
-  pc = dep/kp
-  
-if dep = negative
-  ac = dep/ka
-  pc = kp/dep
+ -   Is logic for updating dep, sat and commit ok? See update_dyads.R
+     and:
+
+dep = dep + ((outcome -- cl_alt) / ticks_spent_tog)
+
+sat = sat + ((outcome -- cl_sat) / ticks_spent_tog)
+
+commit = commit + (inv  ticks_spent_tog)
+
+ -   There is no penalty for not cooperating
+
+ -   Agents have no reason to prioritize more than one person - other
+     than randomish invites
+
+
+**Decisions not documented in original design**
+
+> Agents choose whom to invite based on probability. Low sat = low prob
+> of choosing to invite the agent. See code below from invitations.R
+
+```{r eval=FALSE}
+ # add the abs value of the min sat to all sat - lowest sat value is now 0
+ abs_sort = sat + abs(min(sat))
+ # add a row with probability of choosing each agent - finding %
+ prob = abs_sort/sum(abs_sort) 
+ # 1 random number between 1 and the number of rows in choice
+ n <- sample(x = 1:nrow(choice), size = 1, prob = prob) 
+```
+
+TODO 
+
+Add intercept + cost penalty 
+
+Viz sat + dep 
+
+Add choice from type (own.etc)
+
+> intercept, 4 forskellige "grundtyper" arbejd samme imod etc eller
+> random evt. kod begge dele evt. cost penalty på ikke at arbejde sammen
 
 
 
@@ -66,17 +76,25 @@ source("functions/update_dyads.R")
 empty_matrix <- read_csv("functions/empty_matrix.csv")
 ```
 
+>if dep = positive 
+>ac = ka/dep 
+>pc = dep/kp
+
+>if dep = negative 
+>ac = dep/ka 
+>pc = kp/dep
+
 ```{r setup values}
 ka <- 2
 kp <- 2
 
 N <- 10 # number of agents
 
+ticks <- 10 # how many ticks to run
+
 sort <- "sat" # sort by sat or commit?
 
 invite_function <-"prob.invite" # prob.invite or simple.invite?
-
-ticks <- 10 # how many ticks to run
 
 ```
 
@@ -84,18 +102,31 @@ ticks <- 10 # how many ticks to run
 sat <- sample(-10:10, N^2, replace = TRUE) # integers 
 dep <- sample(-10:10, N^2, replace = TRUE) # integers 
 
-# sat <- runif(N^2, min = -1) # norm 
-# dep <- runif(N^2, min = -1) # norm 
+# sat <- runif(N^2, min = -1) # uniform dist -1 to 1
+# dep <- runif(N^2, min = -1) # uniform dist -1 to 1
 
-#sat = as.numeric(rep(initial_sat,N^2)) # simple value
-#dep = as.numeric(rep(initial_dep,N^2)) # simple value
+# sat = as.numeric(rep(0.1,N^2)) # simple value
+# dep = as.numeric(rep(0.1,N^2)) # simple value
 
 dep[dep==0] <- 0.001 # lololol
+```
 
+```{r setup traits}
+cl_alt <-  sample(-10:10, N, replace = TRUE)
+cl_sat <-  sample(-10:10, N, replace = TRUE)
+inv    <-  sample(-10:10, N, replace = TRUE)
+```
+
+> No touchy
+**No touchy**
+> No touchy
+
+```{r setup dyads}
 dyads <- tibble(agent_1 = as.numeric(rep(1:N, each=N)), # create df with dyads and inital values
                 agent_2 = as.numeric(rep(seq(1:N),N)),
                 sat = sat,
                 dep = dep,
+                commit = 0,
                 ticks_tog = 0,
                 outcome = 0)
   
@@ -105,9 +136,10 @@ dyads_his <- dyads %>% mutate(tick = 0) # history dyads
 ```
 
 ```{r setup traits}
-traits <- tibble(agent = as.numeric(seq(1:N)),
-                 cl_alt = sample(-10:10, N, replace = TRUE),
-                 cl_sat = sample(-10:10, N, replace = TRUE))
+traits <- tibble(agent  = as.numeric(seq(1:N)),
+                 cl_alt = cl_alt,
+                 cl_sat = cl_sat,
+                 inv    = inv)
 ```
 
 ```{r}
@@ -129,7 +161,7 @@ for (i in 1:nrow(hangout)){ # for every dyad
   B_choice <- own.max(agent = "B", matrix = matrix)
 
   dyads <- update.dyads(A = A, B = B, A_choice = A_choice, B_choice = B_choice, 
-                        matrix = matrix, dyads = dyads) # update dyads
+                        matrix = matrix, dyads = dyads) # update dyads with new outcomes, tick_tog, sat and dep
 }
 
 dyads_tick <- dyads %>% mutate(tick = tick) # for history dyads
@@ -139,10 +171,6 @@ dyads <- dyads %>% mutate(outcome = 0) # reset outcomes
 print(sprintf("Tick %s of %s", tick, ticks))
 
 }
-write_csv(dyads_his, "dyads_his.csv")
+dyads_his %>% select(-outcome) %>% write_csv("dyads_his.csv")
 proc.time() - start # get stopwatch time
 ```
-
-
-
-

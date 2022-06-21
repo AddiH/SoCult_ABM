@@ -1,4 +1,4 @@
-update.dyads <- function(A, B, A_choice, B_choice, matrix, dyads){
+update.dyads <- function(A, B, A_choice, B_choice, matrix, dyads, theory){
 
 # find the box the agents end with
   if        (A_choice == "LA1" & B_choice == "LB1") {
@@ -23,11 +23,15 @@ A_B <- which(dyads$agent_1 == A & dyads$agent_2 == B) # find the row no for the 
 
 dyads$ticks_tog[A_B] <- dyads$ticks_tog[A_B] + 1 # add a tick to ticks spent together
 
+################## WOJNG LOOK INTO TRAITS!?!?!?
+
 dyads$sat[A_B] <- dyads$sat[A_B] + ((A_outcome - traits$cl_sat[A]) # update sat
                                     /dyads$ticks_tog[A_B])
 
 dyads$dep[A_B] <- dyads$dep[A_B] + ((A_outcome - traits$cl_alt[A]) # update dep
                                     /dyads$ticks_tog[A_B])
+
+dyads$commit[A_B] <- dyads$commit[A_B] + (traits$inv[A] * dyads$ticks_tog[A_B])
 
 dyads$outcome[A_B] <- A_outcome # add the outcome
 
