@@ -66,25 +66,22 @@ source("functions/invitations.R")
 source("functions/generate_matrix.R")
 source("functions/matrix_choice.R")
 source("functions/get_outcome.R")
+empty_matrix <- read_csv("functions/empty_matrix.csv")
 ```
 
 ```{r setup values}
 ka <- 2
 kp <- 2
 
-N <- 20 # number of agents
+N <- 10 # number of agents
 
 sort <- "sat" # sort by sat or commit?
 
 invite_function <-"prob.invite" # which invite function to use?
 
-viz <- TRUE # to viz or not to viz
+ticks <- 10 # how many ticks to run
 
-ticks <- 100 # how many ticks to run
-
-weight_division <- 6
 ```
-
 
 ```{r setup dyads}
 sat <- sample(-10:10, N^2, replace = TRUE) # integers 
@@ -102,9 +99,12 @@ dyads <- tibble(agent_1 = as.numeric(rep(1:N, each=N)), # create df with dyads a
                 agent_2 = as.numeric(rep(seq(1:N),N)),
                 sat = sat,
                 dep = dep,
-                ticks_tog = rep(0,N^2))
+                ticks_tog = 0,
+                outcome = 0)
   
 dyads <- dyads %>% filter(agent_1 != agent_2) # Remove dyads with the same agent twice
+
+dyads_his <- dyads %>% mutate(tick = 0) # history dyads
 ```
 
 ```{r setup traits}
@@ -112,9 +112,6 @@ traits <- tibble(agent = as.numeric(seq(1:N)),
                  cl_alt = sample(-10:10, N, replace = TRUE),
                  cl_sat = sample(-10:10, N, replace = TRUE))
 ```
-
-
-
 
 ```{r}
 ptm <- proc.time() # start a stopwatch
@@ -137,33 +134,38 @@ for (i in 1:nrow(hangout)){ # for every dyad
   
   # update sat and dep for A
   
-                    A_outcome <- get.outcome(A_choice = A_choice, B_choice = B_choice, matrix = matrix, agent = "A") # get outcome
-                  
-                    A_B <- which(dyads$agent_1 == A & dyads$agent_2 == B) # find the row no for the relevant dyad
-                  
-                    dyads$ticks_tog[A_B] <- dyads$ticks_tog[A_B] + 1 # add a tick to ticks spent together
-                    
-                    dyads$sat[A_B] <- dyads$sat[A_B] + ((A_outcome - traits$cl_sat[A]) # update sat
-                                                          /dyads$ticks_tog[A_B])
-                    
-                    dyads$dep[A_B] <- dyads$dep[A_B] + ((A_outcome - traits$cl_alt[A]) # update dep
-                                                          /dyads$ticks_tog[A_B])
-                    
-  
-  # repeat for B
-                    B_outcome <- get.outcome(A_choice = A_choice, B_choice = B_choice, matrix = matrix, agent = "B") # get outcome
+      A_outcome <- get.outcome(A_choice = A_choice, B_choice = B_choice, matrix = matrix, agent = "A") # get outcome
+      B_outcome <- get.outcome(A_choice = A_choice, B_choice = B_choice, matrix = matrix, agent = "B") # get outcome
     
-                    B_A <- which(dyads$agent_1 == B & dyads$agent_2 == A) # find the row no for the relevant dyad
-                    
-                    dyads$ticks_tog[B_A] <- dyads$ticks_tog[B_A] + 1 # add a tick to ticks spent together
-                    
-                    dyads$sat[B_A] <- dyads$sat[B_A] + ((A_outcome - traits$cl_sat[B]) # update sat
-                                                          /dyads$ticks_tog[B_A])
-                    
-                    dyads$dep[B_A] <- dyads$dep[B_A] + ((A_outcome - traits$cl_alt[B]) # update dep
-                                                          /dyads$ticks_tog[B_A])
+      
+############ Make into function##########################
+      A_B <- which(dyads$agent_1 == A & dyads$agent_2 == B) # find the row no for the relevant dyad
+    
+      dyads$ticks_tog[A_B] <- dyads$ticks_tog[A_B] + 1 # add a tick to ticks spent together
+      
+      dyads$sat[A_B] <- dyads$sat[A_B] + ((A_outcome - traits$cl_sat[A]) # update sat
+                                            /dyads$ticks_tog[A_B])
+      
+      dyads$dep[A_B] <- dyads$dep[A_B] + ((A_outcome - traits$cl_alt[A]) # update dep
+                                            /dyads$ticks_tog[A_B])
+      
+  # repeat for B
+
+      B_A <- which(dyads$agent_1 == B & dyads$agent_2 == A) # find the row no for the relevant dyad
+      
+      dyads$ticks_tog[B_A] <- dyads$ticks_tog[B_A] + 1 # add a tick to ticks spent together
+      
+      dyads$sat[B_A] <- dyads$sat[B_A] + ((A_outcome - traits$cl_sat[B]) # update sat
+                                            /dyads$ticks_tog[B_A])
+      
+      dyads$dep[B_A] <- dyads$dep[B_A] + ((A_outcome - traits$cl_alt[B]) # update dep
+                                            /dyads$ticks_tog[B_A])
 }
 
+dyads_tick <- dyads %>% mutate(tick = tick) # history dyads
+dyads_his <- bind_rows(dyads_his, dyads_tick) # add this tick dyad to dyad_his
+dyads <- dyads %>% mutate(outcome = 0) # reset outcomes
+  
 print(sprintf("Tick %s of %s", tick, ticks))
 
 }
