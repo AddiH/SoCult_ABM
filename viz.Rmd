@@ -7,20 +7,21 @@ output: html_document
 
 ```{r}
 pacman::p_load(tidyverse, igraph)
-df <- read_csv("dyads_his.csv")
+df <- read_csv("100_ticks_20_agents_commit_probinvite.csv")
 N <- length(unique(df$agent_1))
+ticks <- length(unique(df$tick))
 ```
 
 ```{r}
 
-ö <- "dep"
+ö <- "sat"
 
 ```
 
 
 ```{r}
 df_viz <- df %>% 
-  filter(tick == 99) %>% 
+  filter(tick == 10) %>% 
   mutate(weight = .data[[ö]]) %>% 
   select(agent_1, agent_2, weight) 
 
@@ -36,11 +37,39 @@ filename <- sprintf("plots/ticks_tog_%s_ticks.jpeg", ticks)
 
 #jpeg(filename, width=20, height=20, units="cm", res=600)  # open doc
 plot(tictog, 
-     vertex.color = col,
-     vertex.size = 10,
-     vertex.label = NA,
-     layout = layout_on_sphere(tictog),
-     edge.width = E(tictog)$weight/1000)
+     #vertex.color = col,
+     vertex.size = 20,
+     #vertex.label = NA,
+     layout = layout_on_grid(tictog),
+     edge.width = E(tictog)$weight/300)
 #dev.off() # close doc
 ```
+
+```{r}
+for (i in 0:ticks){
+
+df_viz <- df %>% 
+  filter(tick == i) %>% 
+  mutate(weight = .data[[ö]]) %>% 
+  select(agent_1, agent_2, weight) 
+
+tictog <- graph_from_data_frame(df_viz, directed = FALSE, vertices = NULL) # make into igraph object
+tictog <- simplify(tictog) # remove duplicate edges
+
+col <- rainbow(N)
+
+filename <- sprintf("plots/%s.jpeg", tick)
+
+#jpeg(filename, width=20, height=20, units="cm", res=600)  # open doc
+plot(tictog, 
+     #vertex.color = col,
+     vertex.size = 20,
+     #vertex.label = NA,
+     layout = layout_on_grid(tictog),
+     edge.width = E(tictog)$weight/10)
+#dev.off() # close doc
+
+}
+```
+
 

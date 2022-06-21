@@ -1,5 +1,5 @@
 
-simple.invite <- function(invit, dyads, sort) {
+simpleinvite <- function(invit, dyads, sort) {
 for (agent in invit$agent){ # each agent sends invites
   choice <- dyads %>% # make a df from dyads
     filter(agent_1 == agent) %>% # only choose current agent
@@ -16,7 +16,7 @@ for (agent in invit$agent){ # each agent sends invites
 }
 
 
-prob.invite <- function(invit, dyads, sort) {
+probinvite <- function(invit, dyads, sort) {
   for (agent in invit$agent){ # each agent sends invites
     choice <- dyads %>% # make a df from dyads
       filter(agent_1 == agent) %>% # only choose current agent

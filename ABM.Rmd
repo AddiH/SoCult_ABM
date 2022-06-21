@@ -41,8 +41,8 @@ commit = commit + (inv  ticks_spent_tog)
 
 **Decisions not documented in original design**
 
-> Agents choose whom to invite based on probability. Low sat = low prob
-> of choosing to invite the agent. See code below from invitations.R
+Agents choose whom to invite based on probability. Low sat = low prob
+of choosing to invite the agent. See code below from invitations.R
 
 ```{r eval=FALSE}
  # add the abs value of the min sat to all sat - lowest sat value is now 0
@@ -62,6 +62,8 @@ Viz sat + dep
 Add choice from type (own.etc)
 
 Add zero protection to generate.matrix
+
+Fix prob invite for save csv name
 
 > intercept, 4 forskellige "grundtyper" arbejd samme imod etc eller
 > random evt. kod begge dele evt. cost penalty på ikke at arbejde sammen
@@ -94,9 +96,9 @@ N <- 20 # number of agents
 
 ticks <- 100 # how many ticks to run
 
-sort <- "sat" # sort by sat or commit?
+sort <- "commit" # sort by sat or commit?
 
-invite_function <-"prob.invite" # prob.invite or simple.invite?
+invite_function <-"probinvite" # prob or simple?
 
 ```
 
@@ -173,6 +175,7 @@ dyads <- dyads %>% mutate(outcome = 0) # reset outcomes
 print(sprintf("Tick %s of %s", tick, ticks))
 
 }
-dyads_his %>% select(-outcome) %>% write_csv("dyads_his.csv")
+filename <- sprintf("%s_ticks_%s_agents_%s_%s.csv", ticks, N, sort, invite_function)
+dyads_his %>% select(-outcome) %>% write_csv(filename)
 proc.time() - start # get stopwatch time
 ```

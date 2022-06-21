@@ -18,10 +18,10 @@ dates <- function(N, dyads, sort, invite_function) {
 while (nrow(invit) != 0) { # while some agents are left in invite-phase
   
   ############################### Send invites ###################################
-  if (invite_function == "simple.invite"){
-    invit <- simple.invite(invit = invit, dyads = dyads, sort = sort) 
-  } else if (invite_function == "prob.invite"){
-    invit <- prob.invite(invit = invit, dyads = dyads, sort = sort) 
+  if (invite_function == "simpleinvite"){
+    invit <- simpleinvite(invit = invit, dyads = dyads, sort = sort) 
+  } else if (invite_function == "probinvite"){
+    invit <- probinvite(invit = invit, dyads = dyads, sort = sort) 
   }
 
   ####################### Check for mutual invites ###############################
