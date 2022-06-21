@@ -14,6 +14,21 @@ When sorting for higest sat - what if two are similar? How do we sort?
 > Simple: random choice
 
 
+
+
+> intercept, 4 forskellige "grundtyper" arbejd samme imod etc eller random evt. kod begge dele
+> evt. cost penalty på ikke at arbejde sammen
+
+TODO
+Viz in own file - loads in his_dyad
+Update outcomes to function
+Add intercept + cost penalty
+Make his_dyads
+Viz sat + dep
+Git pull ignore plots
+Add choice from type (own.etc)
+
+
 # Pure interdependence theory
 
 All agents are connected
@@ -22,23 +37,17 @@ Friendships don't deteriorate
 
 Agents can't be alone
 
-cl_sat and cl_alt traits are constant pr. agent and independent of dyads
-
-dep = sum (outcome – cl_alt) / ticks_spent_tog
-
-sat = sum (outcome – cl_sat) / ticks_spent_tog
-    
 ka, kp and kj are constant and identical for all agents
 
+cl_sat and cl_alt traits are constant pr. agent and independent of dyads
+
+dep = dep + ((outcome – cl_alt) / ticks_spent_tog)
+
+sat = sat + ((outcome – cl_sat) / ticks_spent_tog)
+    
 ka = 2
 kp = 2
 kj = 0
-
-All agents opt to choose OwnMax in matrices
-
-Joint control = 0
-
-Uden intercept
 
 if dep = positive
   ac = ka/dep
@@ -51,7 +60,7 @@ if dep = negative
 
 
 ```{r}
-pacman::p_load(tidyverse, igraph)
+pacman::p_load(tidyverse)
 source("functions/dates.R")
 source("functions/invitations.R")
 source("functions/generate_matrix.R")
@@ -105,14 +114,7 @@ traits <- tibble(agent = as.numeric(seq(1:N)),
 ```
 
 
-```{r setup emtpy matrix}
-agent <- c("A","A","A","A","B","B","B","B")
-box <- c(1,2,3,4,1,2,3,4)
 
-empty_matrix <- tibble( agent = agent,
-                        box = box,
-                        outcome = as.numeric(rep(0,8)))
-```
 
 ```{r}
 ptm <- proc.time() # start a stopwatch
@@ -164,59 +166,11 @@ for (i in 1:nrow(hangout)){ # for every dyad
 
 print(sprintf("Tick %s of %s", tick, ticks))
 
-############################################## Visualising ####################################################
-
-if (viz == TRUE) {
-  
-        dyads_viz <- dyads %>% 
-          mutate(weight = ticks_tog) %>% 
-          select(agent_1, agent_2, weight) 
-        
-        tictog <- graph_from_data_frame(dyads_viz, directed = FALSE, vertices = NULL) # make into igraph object
-        
-        tictog <- simplify(tictog) # remove duplicate edges
-        
-        col <- rainbow(20)
-        
-        filename <- sprintf("plots/ticks_tog/%s.jpeg", tick)
-        
-        jpeg(filename, width=20, height=20, units="cm", res=600)  # open doc
-        plot(tictog, 
-             vertex.color = col,
-             vertex.size = 10,
-             vertex.label = NA,
-             layout = layout_on_grid(tictog),
-             edge.width = E(tictog)$weight/weight_division)
-        dev.off() # close doc
-        
-}
-
 }
 
 proc.time() - ptm # get stopwatch time
 ```
 
 
-```{r}
-        dyads_viz <- dyads %>% 
-          mutate(weight = ticks_tog) %>% 
-          select(agent_1, agent_2, weight) 
-        
-        tictog <- graph_from_data_frame(dyads_viz, directed = FALSE, vertices = NULL) # make into igraph object
-        
-        tictog <- simplify(tictog) # remove duplicate edges
-        
-        col <- rainbow(20)
-        
-        filename <- sprintf("ticks_tog_%s_ticks.jpeg", ticks)
-        
-        #jpeg(filename, width=20, height=20, units="cm", res=600)  # open doc
-        plot(tictog, 
-             vertex.color = col,
-             vertex.size = 10,
-             vertex.label = NA,
-             layout = layout_on_sphere(tictog),
-             edge.width = E(tictog)$weight/30)
-        #dev.off() # close doc
-```
+
 
