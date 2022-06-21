@@ -7,54 +7,40 @@ output: html_document
 
 ```{r}
 pacman::p_load(tidyverse, igraph)
+df <- read_csv("dyads_his.csv")
+N <- length(unique(df$agent_1))
 ```
 
 ```{r}
 
-dyads_viz <- dyads %>% 
-  mutate(weight = ticks_tog) %>% 
+ö <- "dep"
+
+```
+
+
+```{r}
+df_viz <- df %>% 
+  filter(tick == 99) %>% 
+  mutate(weight = .data[[ö]]) %>% 
   select(agent_1, agent_2, weight) 
 
-tictog <- graph_from_data_frame(dyads_viz, directed = FALSE, vertices = NULL) # make into igraph object
-
+tictog <- graph_from_data_frame(df_viz, directed = FALSE, vertices = NULL) # make into igraph object
 tictog <- simplify(tictog) # remove duplicate edges
+```
 
-col <- rainbow(20)
 
-filename <- sprintf("plots/ticks_tog/%s.jpeg", tick)
+```{r}
+col <- rainbow(N)
 
-jpeg(filename, width=20, height=20, units="cm", res=600)  # open doc
+filename <- sprintf("plots/ticks_tog_%s_ticks.jpeg", ticks)
+
+#jpeg(filename, width=20, height=20, units="cm", res=600)  # open doc
 plot(tictog, 
      vertex.color = col,
      vertex.size = 10,
      vertex.label = NA,
-     layout = layout_on_grid(tictog),
-     edge.width = E(tictog)$weight/weight_division)
-dev.off() # close doc
-
-```
-
-
-```{r}
-        dyads_viz <- dyads %>% 
-          mutate(weight = ticks_tog) %>% 
-          select(agent_1, agent_2, weight) 
-        
-        tictog <- graph_from_data_frame(dyads_viz, directed = FALSE, vertices = NULL) # make into igraph object
-        
-        tictog <- simplify(tictog) # remove duplicate edges
-        
-        col <- rainbow(20)
-        
-        filename <- sprintf("ticks_tog_%s_ticks.jpeg", ticks)
-        
-        #jpeg(filename, width=20, height=20, units="cm", res=600)  # open doc
-        plot(tictog, 
-             vertex.color = col,
-             vertex.size = 10,
-             vertex.label = NA,
-             layout = layout_on_sphere(tictog),
-             edge.width = E(tictog)$weight/30)
-        #dev.off() # close doc
+     layout = layout_on_sphere(tictog),
+     edge.width = E(tictog)$weight/1000)
+#dev.off() # close doc
 ```
 

@@ -61,6 +61,8 @@ Viz sat + dep
 
 Add choice from type (own.etc)
 
+Add zero protection to generate.matrix
+
 > intercept, 4 forskellige "grundtyper" arbejd samme imod etc eller
 > random evt. kod begge dele evt. cost penalty på ikke at arbejde sammen
 
@@ -88,9 +90,9 @@ empty_matrix <- read_csv("functions/empty_matrix.csv")
 ka <- 2
 kp <- 2
 
-N <- 10 # number of agents
+N <- 20 # number of agents
 
-ticks <- 10 # how many ticks to run
+ticks <- 100 # how many ticks to run
 
 sort <- "sat" # sort by sat or commit?
 
@@ -147,7 +149,7 @@ start <- proc.time() # start a stopwatch
 
 for (tick in 1:ticks){
 
-hangout <- dates(N = N, dyads = dyads, sort = sort, invite_function = invite_function) # set up date pairs
+  hangout <- dates(N = N, dyads = dyads, sort = sort, invite_function = invite_function) # set up date pairs
 
 for (i in 1:nrow(hangout)){ # for every dyad
   
