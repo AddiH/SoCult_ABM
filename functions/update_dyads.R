@@ -28,6 +28,8 @@ A_trait_index <- which(traits$agent == A) # Get agent A's index in traits
 dyads$sat[A_B] <- dyads$sat[A_B] + ((A_outcome - traits$cl_sat[A_trait_index]) # update sat
                                     /dyads$ticks_tog[A_B])
 
+#filter()
+
 dyads$dep[A_B] <- dyads$dep[A_B] + ((A_outcome - traits$cl_alt[A_trait_index]) # update dep
                                     /dyads$ticks_tog[A_B])
 

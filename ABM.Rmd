@@ -27,16 +27,27 @@ cl_sat and cl_alt traits are constant pr. agent and independent of dyads
  -   Is logic for updating dep, sat and commit ok? See update_dyads.R
      and:
 
-dep = dep + ((outcome -- cl_alt) / ticks_spent_tog)
+dep = dep + ((outcome - cl_alt) / ticks_spent_tog)
 
-sat = sat + ((outcome -- cl_sat) / ticks_spent_tog)
+sat = sat + ((outcome - cl_sat) / ticks_spent_tog)
 
-commit = commit + (inv  ticks_spent_tog)
+MUST BE UPDATED SO SAT AND DEP IS:
+sat = SUM(outcome_i - cl_sat) / ticks_spent_tog
 
- -   There is no penalty for not cooperating
+commit = commit + (inv * ticks_spent_tog) (evt. cap)
+
+ -   There is no penalty for not cooperating  - das ok. np.
+ 
+ -   No joint control - we can argue that random intercept will make each situation different
 
  -   Agents have no reason to prioritize more than one person - other
-     than randomish invites
+     than randomish invites - das ok
+     
+ -   What dist to draw from when making random intercepts? 
+ 
+sample from see paper
+
+cl always pos
 
 
 **Decisions not documented in original design**
@@ -55,18 +66,14 @@ of choosing to invite the agent. See code below from invitations.R
 
 TODO 
 
-Add intercept + cost penalty 
-
-Viz sat + dep 
+Add intercept 
 
 Add choice from type (own.etc)
 
-Add zero protection to generate.matrix
+Add zero protection to generate.matrix : if dep 0 =ac + pc = 0
 
-Fix prob invite for save csv name
+Viz: barplot pr. dyad med sat, dep og commit udvikling over tid
 
-> intercept, 4 forskellige "grundtyper" arbejd samme imod etc eller
-> random evt. kod begge dele evt. cost penalty på ikke at arbejde sammen
 
 
 
@@ -94,11 +101,13 @@ kp <- 2
 
 N <- 20 # number of agents
 
-ticks <- 100 # how many ticks to run
+ticks <- 10 # how many ticks to run
 
 sort <- "commit" # sort by sat or commit?
 
 invite_function <-"probinvite" # prob or simple?
+
+intercept <- "random" # random or none?
 
 ```
 
@@ -159,7 +168,7 @@ for (i in 1:nrow(hangout)){ # for every dyad
   B <- hangout$B[i]
   
   matrix <- generate.matrix(A = A, B = B, matrix = empty_matrix, 
-                            dyads = dyads, ka = ka, kp = kp) # generate matrix
+                            dyads = dyads, ka = ka, kp = kp, intercept = intercept) # generate matrix
   
   A_choice <- own.max(agent = "A", matrix = matrix) # each agent chooses
   B_choice <- own.max(agent = "B", matrix = matrix)

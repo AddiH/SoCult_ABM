@@ -2,7 +2,7 @@
 ############# This function returns the matrix for relevant agents #############
 ################################################################################
 
-generate.matrix <- function(A, B, dyads, matrix, ka, kp) {
+generate.matrix <- function(A, B, dyads, matrix, ka, kp, intercept) {
 
   #### calculate outcomes for agent A ####
   
@@ -35,7 +35,14 @@ generate.matrix <- function(A, B, dyads, matrix, ka, kp) {
     matrix$outcome[4] <- abs(pc) + matrix$outcome[4]
   }
   
-  # if intercept = TRUE do it here
+  # add intercept
+  if (intercept == "random"){  
+    matrix$outcome[1] <- matrix$outcome[1] + sample(-10:10, 1)  
+    matrix$outcome[2] <- matrix$outcome[2] + sample(-10:10, 1)  
+    matrix$outcome[3] <- matrix$outcome[3] + sample(-10:10, 1)  
+    matrix$outcome[4] <- matrix$outcome[4] + sample(-10:10, 1)  
+  }
+  
   
   #### calculate outcomes for agent B ####
   
