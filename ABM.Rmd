@@ -7,6 +7,7 @@ editor_options:
   markdown: 
     wrap: 72
 ---
+
 **Format**
 
 All agents are connected
@@ -22,35 +23,10 @@ ka and kp are constant and identical for all agents
 cl_sat and cl_alt traits are constant pr. agent and independent of dyads
 
 
-**Issues**
-
-
-commit = commit + (inv * ticks_spent_tog) (evt. cap)
-
- -   There is no penalty for not cooperating  - das ok. np.
- 
- -   No joint control - we can argue that random intercept will make each situation different
-
- -   Agents have no reason to prioritize more than one person - other
-     than randomish invites - das ok
-     
- -   What dist to draw from when making random intercepts? 
- 
-sample from see paper
-
-cl always pos
-
-
 TODO 
 
-Add intercept 
-
 Add choice from type (own.etc)
-
-Add zero protection to generate.matrix : if dep 0 =ac + pc = 0
-
-Viz: barplot pr. dyad med sat, dep og commit udvikling over tid
-
+More types of random intercepts?
 
 
 **Decisions not documented in original design**
@@ -92,9 +68,9 @@ kp <- 2
 
 N <- 10 # number of agents MUST BE EVEN NUMBER
 
-ticks <- 10 # how many ticks to run
+ticks <- 100 # how many ticks to run
 
-sort <- "commit" # sort by sat or commit?
+sort <- "sat" # sort by sat or commit?
 
 invite_function <- "probinvite" # prob or simple?
 
@@ -112,7 +88,6 @@ dep <- sample(-10:10, N^2, replace = TRUE) # integers
 # sat = as.numeric(rep(0.1,N^2)) # simple value
 # dep = as.numeric(rep(0.1,N^2)) # simple value
 
-dep[dep==0] <- 0.001 # lololol
 ```
 
 ```{r setup traits}
@@ -180,6 +155,6 @@ print(sprintf("Tick %s of %s", tick, ticks))
 
 }
 filename <- sprintf("logfiles/%s_ticks_%s_agents_%s_%s.csv", ticks, N, sort, invite_function)
-dyads_his %>% select(-outcome) %>% write_csv(filename)
+dyads_his  %>% write_csv(filename)
 proc.time() - start # get stopwatch time
 ```
