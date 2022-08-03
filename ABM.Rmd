@@ -24,15 +24,6 @@ cl_sat and cl_alt traits are constant pr. agent and independent of dyads
 
 **Issues**
 
- -   Is logic for updating dep, sat and commit ok? See update_dyads.R
-     and:
-
-dep = dep + ((outcome - cl_alt) / ticks_spent_tog)
-
-sat = sat + ((outcome - cl_sat) / ticks_spent_tog)
-
-MUST BE UPDATED SO SAT AND DEP IS:
-sat = SUM(outcome_i - cl_sat) / ticks_spent_tog
 
 commit = commit + (inv * ticks_spent_tog) (evt. cap)
 
@@ -50,6 +41,18 @@ sample from see paper
 cl always pos
 
 
+TODO 
+
+Add intercept 
+
+Add choice from type (own.etc)
+
+Add zero protection to generate.matrix : if dep 0 =ac + pc = 0
+
+Viz: barplot pr. dyad med sat, dep og commit udvikling over tid
+
+
+
 **Decisions not documented in original design**
 
 Agents choose whom to invite based on probability. Low sat = low prob
@@ -64,18 +67,6 @@ of choosing to invite the agent. See code below from invitations.R
  n <- sample(x = 1:nrow(choice), size = 1, prob = prob) 
 ```
 
-TODO 
-
-Add intercept 
-
-Add choice from type (own.etc)
-
-Add zero protection to generate.matrix : if dep 0 =ac + pc = 0
-
-Viz: barplot pr. dyad med sat, dep og commit udvikling over tid
-
-
-
 
 ```{r}
 pacman::p_load(tidyverse)
@@ -84,7 +75,7 @@ source("functions/invitations.R")
 source("functions/generate_matrix.R")
 source("functions/matrix_choice.R")
 source("functions/update_dyads.R")
-empty_matrix <- read_csv("functions/empty_matrix.csv")
+empty_matrix <- read_csv("functions/empty_matrix.csv", show_col_types = FALSE)
 ```
 
 >if dep = positive 
@@ -99,13 +90,13 @@ empty_matrix <- read_csv("functions/empty_matrix.csv")
 ka <- 2
 kp <- 2
 
-N <- 20 # number of agents
+N <- 10 # number of agents MUST BE EVEN NUMBER
 
 ticks <- 10 # how many ticks to run
 
 sort <- "commit" # sort by sat or commit?
 
-invite_function <-"probinvite" # prob or simple?
+invite_function <- "probinvite" # prob or simple?
 
 intercept <- "random" # random or none?
 
@@ -140,12 +131,16 @@ dyads <- tibble(agent_1 = as.numeric(rep(1:N, each=N)), # create df with dyads a
                 sat = sat,
                 dep = dep,
                 commit = 0,
+                tick_no = 0,
                 ticks_tog = 0,
-                outcome = 0)
+                outcome = 0,
+                out_sat = 0,
+                out_dep = 0
+                )
   
 dyads <- dyads %>% filter(agent_1 != agent_2) # Remove dyads with the same agent twice
 
-dyads_his <- dyads %>% mutate(tick = 0) # history dyads
+dyads_his <- dyads
 ```
 
 ```{r setup traits}
@@ -177,14 +172,14 @@ for (i in 1:nrow(hangout)){ # for every dyad
                         matrix = matrix, dyads = dyads) # update dyads with new outcomes, tick_tog, sat and dep
 }
 
-dyads_tick <- dyads %>% mutate(tick = tick) # for history dyads
-dyads_his <- bind_rows(dyads_his, dyads_tick) # add this tick dyad to dyad_his
+dyads <- dyads %>% mutate(tick_no = tick) # for history dyads
+dyads_his <- bind_rows(dyads_his, dyads) # add this tick dyad to dyad_his
 dyads <- dyads %>% mutate(outcome = 0) # reset outcomes
   
 print(sprintf("Tick %s of %s", tick, ticks))
 
 }
-filename <- sprintf("%s_ticks_%s_agents_%s_%s.csv", ticks, N, sort, invite_function)
+filename <- sprintf("logfiles/%s_ticks_%s_agents_%s_%s.csv", ticks, N, sort, invite_function)
 dyads_his %>% select(-outcome) %>% write_csv(filename)
 proc.time() - start # get stopwatch time
 ```
