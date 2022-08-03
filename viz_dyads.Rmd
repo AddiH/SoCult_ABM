@@ -7,9 +7,31 @@ output: html_document
 
 ```{r setup, include=FALSE}
 pacman::p_load(tidyverse)
-df <- read_csv("logfiles/100_ticks_10_agents_sat_probinvite.csv")
+df <- read_csv("logfiles/100_ticks_10_agents_sat_probinvite.csv",
+               col_types = list(
+                 agent_1 = "f",
+                 agent_2 = "f",
+                 tick_no = "i",
+                 ticks_tog = "i"
+               ))
+head(df)
 N <- length(unique(df$agent_1))
 ticks <- max(df$tick_no)
 ```
 
+```{r}
+A <- 9
+B <- 10
+```
+
+
+```{r}
+df %>% filter(agent_1 == A & agent_2 == B | agent_1 == B & agent_2 == A) %>% 
+  ggplot(aes(x = tick_no, y = sat, color = agent_1)) +
+  geom_path()
+
+df %>% filter(agent_1 == A & agent_2 == B | agent_1 == B & agent_2 == A) %>% 
+  ggplot(aes(x = tick_no, y = commit, color = agent_1)) +
+  geom_path()
+```
 

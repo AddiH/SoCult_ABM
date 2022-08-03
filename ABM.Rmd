@@ -27,6 +27,7 @@ TODO
 
 Add choice from type (own.etc)
 More types of random intercepts?
+Commit? or Com?
 
 
 **Decisions not documented in original design**
