@@ -12,41 +12,51 @@ update.dyads <- function(A, B, A_choice, B_choice, matrix, dyads){
   }
 
 # find each agents outcome
-ao <- which(matrix$agent == "A" & matrix$box == box)
-A_outcome <- matrix$outcome[ao]
+ao <- which(matrix$agent == "A" & matrix$box == box) # find "raw" outcome
+A_out <- matrix$outcome[ao] # the  outcome
 
-bo <- which(matrix$agent == "B" & matrix$box == box)
-B_outcome <- matrix$outcome[bo]
+bo <- which(matrix$agent == "B" & matrix$box == box) # find "raw" outcome
+B_out <- matrix$outcome[bo] # the  outcome
 
-# update dyads: sat, dep, tick_tog and outcome
-A_B <- which(dyads$agent_1 == A & dyads$agent_2 == B) # find the row no for the relevant dyad
-dyads$outcome[A_B] <- A_outcome # add the outcome
-dyads$ticks_tog[A_B] <- dyads$ticks_tog[A_B] + 1 # add a tick to ticks spent together
-A_trait_index <- which(traits$agent == A) # Get agent A's index in traits
+# update dyads: outcome, sat, dep and commit
+A_B_i <- which(dyads$agent_1 == A & dyads$agent_2 == B) # find the row no for the relevant dyad
+dyads$ticks_tog[A_B_i] <- dyads$ticks_tog[A_B_i] + 1 # add a tick to ticks spent together
+
+A_i <- which(traits$agent == A) # Get agent A's index in traits
+
+dyads$outcome[A_B_i] <- A_out # add outcomes and adjusted outcomes
+dyads$out_sat[A_B_i] <- A_out - traits$cl_sat[A_i]
+dyads$out_dep[A_B_i] <- A_out - traits$cl_alt[A_i]
 
 
-dyads$sat[A_B] <- dyads$sat[A_B] + ((A_outcome - traits$cl_sat[A_trait_index]) # update sat
-                                    /dyads$ticks_tog[A_B])
+prev_out <- dyads_his %>% # find the previous outcomes
+  filter(agent_1 == A & agent_2 == B)
 
-dyads$dep[A_B] <- dyads$dep[A_B] + ((A_outcome - traits$cl_alt[A_trait_index]) # update dep
-                                    /dyads$ticks_tog[A_B])
+dyads$sat[A_B_i] <- (sum(prev_out$out_sat) + dyads$out_sat[A_B_i]) / dyads$ticks_tog[A_B_i] # update sat
 
-dyads$commit[A_B] <- dyads$commit[A_B] + (traits$inv[A_trait_index] * dyads$ticks_tog[A_B]) # update commit
+dyads$dep[A_B_i] <- (sum(prev_out$out_dep) + dyads$out_dep[A_B_i]) / dyads$ticks_tog[A_B_i] # update dep
+
+dyads$commit[A_B_i] <- dyads$commit[A_B_i] + (traits$inv[A_i] * dyads$ticks_tog[A_B_i]) # update com
 
 # repeat for B
-B_A <- which(dyads$agent_1 == B & dyads$agent_2 == A) # find the row no for the relevant dyad
-dyads$outcome[B_A] <- B_outcome # add the outcome
-dyads$ticks_tog[B_A] <- dyads$ticks_tog[B_A] + 1 # add a tick to ticks spent together
-B_trait_index <- which(traits$agent == B) # Get agent B's index in traits
+B_A_i <- which(dyads$agent_1 == B & dyads$agent_2 == A) # find the row no for the relevant dyad
+dyads$ticks_tog[B_A_i] <- dyads$ticks_tog[B_A_i] + 1 # add a tick to ticks spent together
+
+B_i <- which(traits$agent == B) # Get agent B's index in traits
+
+dyads$outcome[B_A_i] <- B_out # add outcomes and adjusted outcomes
+dyads$out_sat[B_A_i] <- B_out - traits$cl_sat[B_i]
+dyads$out_dep[B_A_i] <- B_out - traits$cl_alt[B_i]
 
 
-dyads$sat[B_A] <- dyads$sat[B_A] + ((B_outcome - traits$cl_sat[B_trait_index]) # update sat
-                                    /dyads$ticks_tog[B_A])
+prev_out <- dyads_his %>% # find the previous outcomes
+  filter(agent_1 == A & agent_2 == B)
 
-dyads$dep[B_A] <- dyads$dep[B_A] + ((B_outcome - traits$cl_alt[B_trait_index]) # update dep
-                                    /dyads$ticks_tog[B_A])
+dyads$sat[B_A_i] <- (sum(prev_out$out_sat) + dyads$out_sat[B_A_i]) / dyads$ticks_tog[B_A_i] # update sat
 
-dyads$commit[B_A] <- dyads$commit[B_A] + (traits$inv[B_trait_index] * dyads$ticks_tog[B_A]) # update commit
+dyads$dep[B_A_i] <- (sum(prev_out$out_dep) + dyads$out_dep[B_A_i]) / dyads$ticks_tog[B_A_i] # update dep
+
+dyads$commit[B_A_i] <- dyads$commit[B_A_i] + (traits$inv[B_i] * dyads$ticks_tog[B_A_i]) # update com
 
 return(dyads)
 }

@@ -1,7 +1,7 @@
-.Rproj.user
-.Rhistory
-.RData
-.Ruserdata
-.DS_Store
-/plots
-.csv
+*.Rproj.user
+*.Rhistory
+*.RData
+*.Ruserdata
+*.DS_Store
+**/plots
+*.csv

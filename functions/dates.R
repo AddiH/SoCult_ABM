@@ -80,7 +80,7 @@ while (nrow(invit) != 0) { # while some agents are left in invite-phase
   hangout_dyads <- invit %>% filter(date == TRUE) # select set dyads
   hangout <- rbind(hangout, hangout_dyads) # append dyads to hangout df
   invit <- invit %>% filter(date == FALSE)# remove agents with dates from invite
-
+ 
 } # end of while loop
   
   hangout <- hangout %>% # clean up df before returning
