@@ -7,9 +7,9 @@ output: html_document
 
 ```{r}
 pacman::p_load(tidyverse, igraph)
-df <- read_csv("100_ticks_20_agents_commit_probinvite.csv")
+df <- read_csv("logfiles/100_ticks_20_agents_commit_probinvite.csv")
 N <- length(unique(df$agent_1))
-ticks <- length(unique(df$tick))
+ticks <- length(unique(df$tick_no))
 ```
 
 ```{r}

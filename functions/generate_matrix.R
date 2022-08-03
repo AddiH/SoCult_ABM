@@ -12,7 +12,7 @@ generate.matrix <- function(A, B, dyads, matrix, ka, kp, intercept) {
   if (A_B$dep > 0){ # if dep is pos
     ac <- ka / A_B$dep
     pc <- A_B$dep / kp
-  } else if (A_B$dep < 0){ # if dep is neg
+  } else if (A_B$dep <= 0){ # if dep is neg
     ac <- A_B$dep / ka
     pc <- kp / A_B$dep
   }
@@ -52,7 +52,7 @@ generate.matrix <- function(A, B, dyads, matrix, ka, kp, intercept) {
   if (B_A$dep > 0){ # if dep is pos
     ac <- ka / B_A$dep
     pc <- B_A$dep / kp
-  } else if (B_A$dep < 0){ # if dep is neg
+  } else if (B_A$dep <= 0){ # if dep is neg
     ac <- B_A$dep / ka
     pc <- kp / B_A$dep
   }
