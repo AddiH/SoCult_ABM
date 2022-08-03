@@ -94,7 +94,7 @@ dep <- sample(-10:10, N^2, replace = TRUE) # integers
 ```{r setup traits}
 cl_alt <-  sample(-10:10, N, replace = TRUE)
 cl_sat <-  sample(-10:10, N, replace = TRUE)
-inv    <-  sample(-10:10, N, replace = TRUE)
+inv    <-  sample(1:10, N, replace = TRUE)
 ```
 
 > No touchy
@@ -157,5 +157,9 @@ print(sprintf("Tick %s of %s", tick, ticks))
 }
 filename <- sprintf("logfiles/%s_ticks_%s_agents_%s_%s.csv", ticks, N, sort, invite_function)
 dyads_his  %>% write_csv(filename)
+
+filename <- sprintf("logfiles/traits_%s_ticks_%s_agents_%s_%s.csv", ticks, N, sort, invite_function)
+traits  %>% write_csv(filename)
+
 proc.time() - start # get stopwatch time
 ```

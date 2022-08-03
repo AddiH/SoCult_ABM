@@ -5,9 +5,38 @@ date: '2022-08-03'
 output: html_document
 ---
 
-```{r setup, include=FALSE}
+```{r ignore}
 pacman::p_load(tidyverse)
-df <- read_csv("logfiles/100_ticks_10_agents_sat_probinvite.csv",
+```
+
+```{r edit}
+file <- "logfiles/100_ticks_10_agents_sat_probinvite.csv"
+trait_file <- "logfiles/traits_100_ticks_10_agents_sat_probinvite.csv"
+```
+
+
+```{r choose one of two}
+theory <- "Interdependence"
+
+sort <- "Satisfaction"
+s_sort <- "sat"
+
+sec <- "Commitment" # secondary value
+s_sec <-  "commit"
+```
+
+```{r choose one of two}
+# theory <- "Investment"
+
+# sort <- "Commitment"
+# s_sort <- "com"
+# 
+# sec <- "Satisfction" # secondary value
+# s_sec <-  "sat"
+```
+
+```{r ignore}
+df <- read_csv(file, # loading file with correct classes
                col_types = list(
                  agent_1 = "f",
                  agent_2 = "f",
@@ -15,23 +44,134 @@ df <- read_csv("logfiles/100_ticks_10_agents_sat_probinvite.csv",
                  ticks_tog = "i"
                ))
 head(df)
+
+traits <- read_csv(trait_file)
+
+df$tick_spent_tog <-ifelse(df$outcome == 0, F, T) # add a column indicating whether the row contains an outcome (whether the agents hung out that tick)
+
 N <- length(unique(df$agent_1))
 ticks <- max(df$tick_no)
 ```
 
-```{r}
-A <- 9
+```{r edit}
+# agents to look at
+A <- 2
 B <- 10
 ```
 
+```{r ignore}
+dyad <- df %>% filter(agent_1 == A & agent_2 == B | agent_1 == B & agent_2 == A) # find info for relevant dyad
+
+t <- dyad %>% filter(tick_spent_tog == T) %>% select(tick_no) %>% distinct() 
+t <- unique(t$tick_no) # list of ticks the dyad spent together
+
+A_alt <- traits$cl_alt[A] # making string with A's traits
+A_sat <- traits$cl_sat[A]
+A_inv <- traits$inv[A]
+A_stats <- sprintf("Agent %s:  cl_alt = %s,   cl_sat = %s,   inv = %s", A, A_alt, A_sat, A_inv)
+
+B_alt <- traits$cl_alt[B] # making string with B's traits
+B_sat <- traits$cl_sat[B]
+B_inv <- traits$inv[B]
+B_stats <- sprintf("Agent %s:  cl_alt = %s,   cl_sat = %s,   inv = %s", B, B_alt, B_sat, B_inv)
+
+dyad %>% # plot for theory relevant sort
+  ggplot(aes(x = tick_no, y = .data[[s_sort]], color = agent_1)) +
+  geom_vline(xintercept = t, color = "#e3e3e3") +  
+  geom_path() +
+  labs(title = theory,
+        x ="Time", 
+        y = sort,
+        color = "Agent",
+        subtitle = "Line marks a date") +
+  annotate("text",
+           x = 75, 
+           y = -7,
+           label = B_stats)+
+  annotate("text",
+           x = 75, 
+           y = 0,
+           label = A_stats)+
+  theme(plot.subtitle = element_text(color = "grey")) +
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_blank(), 
+        axis.line = element_line(colour = "black"))
+
+
+dyad %>% # plot for theory irrelevant sort
+  ggplot(aes(x = tick_no, y = .data[[s_sec]], color = agent_1)) +
+  geom_vline(xintercept = t, color = "#e3e3e3") +  
+  geom_path() +
+  labs(title = theory,
+        x ="Time", 
+        y = sec,
+        color = "Agent",
+        subtitle = "Line marks a date") +
+    annotate("text",
+           x = 75, 
+           y = -7,
+           label = B_stats)+
+  annotate("text",
+           x = 75, 
+           y = 0,
+           label = A_stats)+
+  theme(plot.subtitle = element_text(color = "grey")) +
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_blank(), 
+        axis.line = element_line(colour = "black"))
+
+dyad %>% # plot for dependency
+  ggplot(aes(x = tick_no, y = dep, color = agent_1)) +
+  geom_vline(xintercept = t, color = "#e3e3e3") +  
+  geom_path() +
+  labs(title = theory,
+        x ="Time", 
+        y = "Dependency",
+        color = "Agent",
+        subtitle = "Line marks a date") +
+    annotate("text",
+           x = 75, 
+           y = -7,
+           label = B_stats)+
+  annotate("text",
+           x = 75, 
+           y = 0,
+           label = A_stats)+
+  theme(plot.subtitle = element_text(color = "grey")) +
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_blank(), 
+        axis.line = element_line(colour = "black"))
+
+
+dyad %>% # plot for outcomes
+  filter(outcome != 0) %>% 
+  ggplot(aes(x = tick_no, y = outcome, color = agent_1)) +
+  geom_vline(xintercept = t, color = "#e3e3e3") +  
+  geom_point() +
+  labs(title = theory,
+        x ="Time", 
+        y = "Outcome",
+        color = "Agent",
+        subtitle = "Line marks a date") +
+    annotate("text",
+           x = 75, 
+           y = -7,
+           label = B_stats)+
+  annotate("text",
+           x = 75, 
+           y = 0,
+           label = A_stats)+
+  theme(plot.subtitle = element_text(color = "grey")) +
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_blank(), 
+        axis.line = element_line(colour = "black"))
+```
 
 ```{r}
-df %>% filter(agent_1 == A & agent_2 == B | agent_1 == B & agent_2 == A) %>% 
-  ggplot(aes(x = tick_no, y = sat, color = agent_1)) +
-  geom_path()
-
-df %>% filter(agent_1 == A & agent_2 == B | agent_1 == B & agent_2 == A) %>% 
-  ggplot(aes(x = tick_no, y = commit, color = agent_1)) +
-  geom_path()
+dyad <- 
 ```
 
