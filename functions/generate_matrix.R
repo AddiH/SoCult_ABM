@@ -5,7 +5,7 @@
 generate.matrix <- function(A, B, dyads, matrix, ka, kp, intercept) {
 
   #### calculate outcomes for agent A ####
-  
+  browser()
   A_B <- dyads %>% filter(agent_1 == A & agent_2 == B) # find relevant dyad
 
   # calculate ac and pc
@@ -90,5 +90,5 @@ generate.matrix <- function(A, B, dyads, matrix, ka, kp, intercept) {
   dyads$ac[B_A_i] <- ac
   dyads$pc[B_A_i] <- pc
   
-  return(matrix)
+  return(c(matrix, dyads))
   }# end of function
