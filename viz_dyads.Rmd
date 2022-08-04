@@ -10,8 +10,8 @@ pacman::p_load(tidyverse)
 ```
 
 ```{r edit}
-file <- "logfiles/100_ticks_10_agents_sat_probinvite.csv"
-trait_file <- "logfiles/traits_100_ticks_10_agents_sat_probinvite.csv"
+file <- "logfiles/1000_ticks_10_agents_sat_probinvite.csv"
+trait_file <- "logfiles/traits_1000_ticks_10_agents_sat_probinvite.csv"
 ```
 
 
@@ -55,8 +55,8 @@ ticks <- max(df$tick_no)
 
 ```{r edit}
 # agents to look at
-A <- 2
-B <- 10
+A <- 10
+B <- 5
 ```
 
 ```{r ignore}
@@ -172,6 +172,24 @@ dyad %>% # plot for outcomes
 ```
 
 ```{r}
-dyad <- 
+agent <- df %>% filter(agent_1 == A)
+
+agent %>% # plot for outcomes
+  filter(outcome != 0) %>% 
+  ggplot(aes(x = tick_no, y = sat, color = agent_2)) +
+  geom_path() +
+  labs(title = theory,
+        x ="Time", 
+        y = "Outcome",
+        color = "Agent",
+        subtitle = "Line marks a date") +
+  annotate("text",
+           x = 75, 
+           y = 0,
+           label = A_stats)+
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_blank(), 
+        axis.line = element_line(colour = "black"))
 ```
 
