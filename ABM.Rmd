@@ -20,8 +20,6 @@ No joint action in matrix
 
 ka and kp are constant and identical for all agents
 
-cl_sat and cl_alt traits are constant pr. agent and independent of dyads
-
 
 TODO 
 
@@ -32,6 +30,7 @@ Commit? or Com?
 
 **Decisions not documented in original design**
 
+*Invite probability*
 Agents choose whom to invite based on probability. Low sat = low prob
 of choosing to invite the agent. See code below from invitations.R
 
@@ -44,6 +43,9 @@ of choosing to invite the agent. See code below from invitations.R
  n <- sample(x = 1:nrow(choice), size = 1, prob = prob) 
 ```
 
+*Comparison levels*
+Agents cl_alt and cl_sat can be dynamic, and uniqe for each agent in every dyad. cl_alt is based on the X latest encounters with everyone but the relevant agent. cl_sat is based on the X latest encounters of the relevant agent. Both cl's are modified by two agent specific baselines, one for alt and one for sat. 
+Cl's are updated at end of tick - meaning the cl noted next to an outcome is not the cl used for math - the cl of the previous row is.
 
 ```{r}
 pacman::p_load(tidyverse)
@@ -64,6 +66,7 @@ empty_matrix <- read_csv("functions/empty_matrix.csv", show_col_types = FALSE)
 >pc = kp/dep
 
 ```{r setup values}
+
 ka <- 2
 kp <- 2
 
@@ -77,11 +80,14 @@ invite_function <- "probinvite" # prob or simple?
 
 intercept <- "random" # random or none?
 
-cl <- 
+cl <- "dynamic" # dynamic or static?
+
+cl_timeline <- 10 # number of encounters for calculating cl's (the agents memory)
 
 ```
 
 ```{r setup dyads}
+
 sat <- sample(-10:10, N^2, replace = TRUE) # integers 
 dep <- sample(-10:10, N^2, replace = TRUE) # integers 
 
@@ -94,10 +100,25 @@ dep <- sample(-10:10, N^2, replace = TRUE) # integers
 ```
 
 ```{r setup traits}
-cl_alt <-  sample(1:10, N, replace = TRUE)
-cl_sat <-  sample(1:10, N, replace = TRUE)
-inv    <-  sample(1:10, N, replace = TRUE)
+
+cl_alt_b <- sample(1:10, N, replace = TRUE)
+cl_alt_b <- as.numeric(rep(cl_alt_setup, each=N))
+
+cl_sat_b <- sample(1:10, N, replace = TRUE)
+cl_sat_b <- as.numeric(rep(cl_sat_setup, each=N))
+
+inv      <- sample(1:10, N, replace = TRUE)
+inv      <- as.numeric(rep(inv, each=N))
+
+cl_alt   <- sample(1:10, N*N, replace = TRUE)
+cl_sat   <- sample(1:10, N*N, replace = TRUE)
+
 ```
+
+
+
+
+
 
 > No touchy
 **No touchy**
@@ -113,7 +134,13 @@ dyads <- tibble(agent_1 = as.numeric(rep(1:N, each=N)), # create df with dyads a
                 ticks_tog = 0,
                 outcome = 0,
                 out_sat = 0,
-                out_dep = 0
+                out_dep = 0,
+                
+                cl_alt_b = cl_alt_b,
+                cl_sat_b = cl_sat_b,
+                cl_alt = cl_alt,
+                cl_sat = cl_sat,
+                inv = inv
                 )
   
 dyads <- dyads %>% filter(agent_1 != agent_2) # Remove dyads with the same agent twice
@@ -121,12 +148,6 @@ dyads <- dyads %>% filter(agent_1 != agent_2) # Remove dyads with the same agent
 dyads_his <- dyads
 ```
 
-```{r setup traits}
-traits <- tibble(agent  = as.numeric(seq(1:N)),
-                 cl_alt = cl_alt,
-                 cl_sat = cl_sat,
-                 inv    = inv)
-```
 
 ```{r}
 start <- proc.time() # start a stopwatch
