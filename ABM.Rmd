@@ -70,9 +70,9 @@ empty_matrix <- read_csv("functions/empty_matrix.csv", show_col_types = FALSE)
 ka <- 2
 kp <- 2
 
-N <- 10 # number of agents MUST BE EVEN NUMBER
+N <- 20 # number of agents MUST BE EVEN NUMBER
 
-ticks <- 100 # how many ticks to run
+ticks <- 1000 # how many ticks to run
 
 sort <- "sat" # sort by sat or commit?
 
@@ -165,11 +165,8 @@ for (i in 1:nrow(hangout)){ # for every dyad
   A <- hangout$A[i] # get the "name" of each agent
   B <- hangout$B[i]
   
-  matrix_dyads <- generate.matrix(A = A, B = B, matrix = empty_matrix, 
-                            dyads = dyads, ka = ka, kp = kp, intercept = intercept) # generate matrix
-  browser()
-  matrix <- matrix_dyads[1]
-  dyads <- matrix_dyads[2]
+  matrix <- generate.matrix(A = A, B = B, matrix = empty_matrix, 
+                            dyads = dyads, ka = ka, kp = kp, intercept = intercept) # generate matrix  
   
   A_choice <- own.max(agent = "A", matrix = matrix) # each agent chooses
   B_choice <- own.max(agent = "B", matrix = matrix)
