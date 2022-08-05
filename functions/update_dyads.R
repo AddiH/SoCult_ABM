@@ -62,8 +62,8 @@ if (cl == "dynamic"){
 # cl_sat
 cl_sat_A_B <- prev_out_A_B %>% # find prev outcomes for this dyad
           filter(date == T) %>%  
-          arrange(tick_no) %>% 
-          slice(1:(cl_timeline - 1)) 
+  arrange(desc(tick_no)) %>% 
+  slice(1:(cl_timeline - 1)) 
 
     if(length(cl_sat_A_B$tick_no) > (cl_timeline - 1)){ # set correct div for division in next step
       div <- length(cl_sat_A_B$tick_no) + 1
@@ -76,7 +76,7 @@ dyads$cl_sat[A_B_i] <- cl_sat_sum_out_A_B + dyads$cl_sat_b[A_B_i] # update cl_sa
 cl_alt_A_B <- dyads_his %>% # find the previous outcomes
   filter(agent_1 == A & agent_2 != B) %>% 
   filter(date == T) %>%  
-  arrange(tick_no) %>% 
+  arrange(desc(tick_no)) %>% 
   slice(1:(cl_timeline - 1)) 
 
     if(length(cl_alt_A_B$tick_no) > (cl_timeline - 1)){ # set correct div for division in next step
@@ -90,7 +90,7 @@ dyads$cl_alt[A_B_i] <- cl_alt_sum_out_A_B + dyads$cl_alt_b[A_B_i] # update cl_al
 # cl_sat
 cl_sat_B_A <- prev_out_B_A %>% # find prev outcomes for this dyad
   filter(date == T) %>%  
-  arrange(tick_no) %>% 
+  arrange(desc(tick_no)) %>% 
   slice(1:(cl_timeline - 1)) 
 
 if(length(cl_sat_B_A$tick_no) > (cl_timeline - 1)){ # set correct div for division in next step
@@ -104,7 +104,7 @@ dyads$cl_sat[B_A_i] <- cl_sat_sum_out_B_A + dyads$cl_sat_b[B_A_i] # update cl_sa
 cl_alt_B_A <- dyads_his %>% # find the previous outcomes
   filter(agent_1 == B & agent_2 != A) %>% 
   filter(date == T) %>%  
-  arrange(tick_no) %>% 
+  arrange(desc(tick_no)) %>% 
   slice(1:(cl_timeline - 1)) 
 
 if(length(cl_alt_B_A$tick_no) > (cl_timeline - 1)){ # set correct div for division in next step

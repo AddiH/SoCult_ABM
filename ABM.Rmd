@@ -70,9 +70,9 @@ empty_matrix <- read_csv("functions/empty_matrix.csv", show_col_types = FALSE)
 ka <- 2
 kp <- 2
 
-N <- 20 # number of agents MUST BE EVEN NUMBER
+N <- 10 # number of agents MUST BE EVEN NUMBER
 
-ticks <- 1000 # how many ticks to run
+ticks <- 100 # how many ticks to run
 
 sort <- "sat" # sort by sat or commit?
 

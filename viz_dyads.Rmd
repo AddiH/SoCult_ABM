@@ -10,7 +10,7 @@ pacman::p_load(tidyverse)
 ```
 
 ```{r edit}
-file <- "logfiles/100_ticks_10_agents_sat_probinvite_dynamic_10.csv"
+file <- filename
 ```
 
 
@@ -50,7 +50,7 @@ ticks <- max(df$tick_no)
 
 ```{r edit}
 # agents to look at
-A <- 2
+A <- 3
 B <- 5
 ```
 
@@ -132,7 +132,7 @@ dyad %>% # plot for dependency
 
 
 dyad %>% # plot for outcomes
-  filter(outcome != 0) %>% 
+  filter(date == T) %>% 
   ggplot(aes(x = tick_no, y = outcome, color = agent_1)) +
   geom_vline(xintercept = t, color = "#e3e3e3") +  
   geom_point() +
@@ -148,7 +148,7 @@ dyad %>% # plot for outcomes
         axis.line = element_line(colour = "black"))
 
 dyad %>% # plot for ac
-  filter(outcome != 0) %>% 
+  filter(date == T) %>% 
   ggplot(aes(x = tick_no, y = ac, color = agent_1)) +
   geom_vline(xintercept = t, color = "#e3e3e3") +  
   geom_point() +
@@ -164,13 +164,45 @@ dyad %>% # plot for ac
         axis.line = element_line(colour = "black"))
 
 dyad %>% # plot for pc
-  filter(outcome != 0) %>% 
+  filter(date == T) %>% 
   ggplot(aes(x = tick_no, y = pc, color = agent_1)) +
   geom_vline(xintercept = t, color = "#e3e3e3") +  
   geom_point() +
   labs(title = theory,
         x ="Time", 
         y = "PC",
+        color = "Agent",
+        subtitle = "Line marks a date") +
+  theme(plot.subtitle = element_text(color = "grey")) +
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_blank(), 
+        axis.line = element_line(colour = "black"))
+
+dyad %>% # plot for cl_alt
+  filter(date == T) %>%
+  ggplot(aes(x = tick_no, y = cl_alt, color = agent_1)) +
+  geom_vline(xintercept = t, color = "#e3e3e3") +  
+  geom_point() +
+  labs(title = theory,
+        x ="Time", 
+        y = "Cl alt",
+        color = "Agent",
+        subtitle = "Line marks a date") +
+  theme(plot.subtitle = element_text(color = "grey")) +
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_blank(), 
+        axis.line = element_line(colour = "black"))
+
+dyad %>% # plot for cl_sat
+  filter(date == T) %>% 
+  ggplot(aes(x = tick_no, y = cl_sat, color = agent_1)) +
+  geom_vline(xintercept = t, color = "#e3e3e3") +  
+  geom_point() +
+  labs(title = theory,
+        x ="Time", 
+        y = "Cl sat",
         color = "Agent",
         subtitle = "Line marks a date") +
   theme(plot.subtitle = element_text(color = "grey")) +
