@@ -20,8 +20,6 @@ No joint action in matrix
 
 ka and kp are constant and identical for all agents
 
-cl_sat and cl_alt traits are constant pr. agent and independent of dyads
-
 
 TODO 
 
@@ -32,6 +30,7 @@ Commit? or Com?
 
 **Decisions not documented in original design**
 
+*Invite probability*
 Agents choose whom to invite based on probability. Low sat = low prob
 of choosing to invite the agent. See code below from invitations.R
 
@@ -44,6 +43,9 @@ of choosing to invite the agent. See code below from invitations.R
  n <- sample(x = 1:nrow(choice), size = 1, prob = prob) 
 ```
 
+*Comparison levels*
+Agents cl_alt and cl_sat can be dynamic, and uniqe for each agent in every dyad. cl_alt is based on the X latest encounters with everyone but the relevant agent. cl_sat is based on the X latest encounters of the relevant agent. Both cl's are modified by two agent specific baselines, one for alt and one for sat. 
+Cl's are updated at end of tick - meaning the cl noted next to an outcome is not the cl used for math - the cl of the previous row is. When calculating the CL's (see formula) "raw" outcomes are used, not previous outcomes adjusted with cls.
 
 ```{r}
 pacman::p_load(tidyverse)
@@ -64,12 +66,13 @@ empty_matrix <- read_csv("functions/empty_matrix.csv", show_col_types = FALSE)
 >pc = kp/dep
 
 ```{r setup values}
+
 ka <- 2
 kp <- 2
 
 N <- 10 # number of agents MUST BE EVEN NUMBER
 
-ticks <- 1000 # how many ticks to run
+ticks <- 100 # how many ticks to run
 
 sort <- "sat" # sort by sat or commit?
 
@@ -77,10 +80,14 @@ invite_function <- "probinvite" # prob or simple?
 
 intercept <- "random" # random or none?
 
+cl <- "dynamic" # dynamic or static?
+
+cl_timeline <- 10 # number of encounters for calculating cl's (the agents memory)
 
 ```
 
 ```{r setup dyads}
+
 sat <- sample(-10:10, N^2, replace = TRUE) # integers 
 dep <- sample(-10:10, N^2, replace = TRUE) # integers 
 
@@ -93,10 +100,25 @@ dep <- sample(-10:10, N^2, replace = TRUE) # integers
 ```
 
 ```{r setup traits}
-cl_alt <-  sample(1:10, N, replace = TRUE)
-cl_sat <-  sample(1:10, N, replace = TRUE)
-inv    <-  sample(1:10, N, replace = TRUE)
+
+cl_alt_b <- sample(1:10, N, replace = TRUE)
+cl_alt_b <- as.numeric(rep(cl_alt_b, each=N))
+
+cl_sat_b <- sample(1:10, N, replace = TRUE)
+cl_sat_b <- as.numeric(rep(cl_sat_b, each=N))
+
+inv      <- sample(1:10, N, replace = TRUE)
+inv      <- as.numeric(rep(inv, each=N))
+
+cl_alt   <- sample(1:10, N*N, replace = TRUE)
+cl_sat   <- sample(1:10, N*N, replace = TRUE)
+
 ```
+
+
+
+
+
 
 > No touchy
 **No touchy**
@@ -110,9 +132,19 @@ dyads <- tibble(agent_1 = as.numeric(rep(1:N, each=N)), # create df with dyads a
                 commit = 0,
                 tick_no = 0,
                 ticks_tog = 0,
-                outcome = 0,
+                
+                outcome = 0, # (these four are cleared after each tick but saved in dyads_his)
                 out_sat = 0,
-                out_dep = 0
+                out_dep = 0,
+                date = F,
+                ac = 0,
+                pc = 0,
+                
+                cl_alt_b = cl_alt_b,
+                cl_sat_b = cl_sat_b,
+                cl_alt = cl_alt,
+                cl_sat = cl_sat,
+                inv = inv
                 )
   
 dyads <- dyads %>% filter(agent_1 != agent_2) # Remove dyads with the same agent twice
@@ -120,12 +152,6 @@ dyads <- dyads %>% filter(agent_1 != agent_2) # Remove dyads with the same agent
 dyads_his <- dyads
 ```
 
-```{r setup traits}
-traits <- tibble(agent  = as.numeric(seq(1:N)),
-                 cl_alt = cl_alt,
-                 cl_sat = cl_sat,
-                 inv    = inv)
-```
 
 ```{r}
 start <- proc.time() # start a stopwatch
@@ -140,27 +166,24 @@ for (i in 1:nrow(hangout)){ # for every dyad
   B <- hangout$B[i]
   
   matrix <- generate.matrix(A = A, B = B, matrix = empty_matrix, 
-                            dyads = dyads, ka = ka, kp = kp, intercept = intercept) # generate matrix
+                            dyads = dyads, ka = ka, kp = kp, intercept = intercept) # generate matrix  
   
   A_choice <- own.max(agent = "A", matrix = matrix) # each agent chooses
   B_choice <- own.max(agent = "B", matrix = matrix)
 
   dyads <- update.dyads(A = A, B = B, A_choice = A_choice, B_choice = B_choice, 
-                        matrix = matrix, dyads = dyads) # update dyads with new outcomes, tick_tog, sat and dep
+                        matrix = matrix, dyads = dyads, tick = tick, cl = cl, cl_timeline = cl_timeline) # update dyads with new outcomes, tick_tog, sat and dep, AND CL's IF relevant
 }
 
 dyads <- dyads %>% mutate(tick_no = tick) # for history dyads
 dyads_his <- bind_rows(dyads_his, dyads) # add this tick dyad to dyad_his
-dyads <- dyads %>% mutate(outcome = 0) # reset outcomes
+dyads <- dyads %>% mutate(outcome = 0, out_dep = 0, out_sat = 0, date = F, ac = 0, pc = 0) # reset outcomes and date status
   
 print(sprintf("Tick %s of %s", tick, ticks))
 
 }
-filename <- sprintf("logfiles/%s_ticks_%s_agents_%s_%s.csv", ticks, N, sort, invite_function)
+filename <- sprintf("logfiles/%s_ticks_%s_agents_%s_%s_%s_%s.csv", ticks, N, sort, invite_function, cl, cl_timeline)
 dyads_his  %>% write_csv(filename)
-
-filename <- sprintf("logfiles/traits_%s_ticks_%s_agents_%s_%s.csv", ticks, N, sort, invite_function)
-traits  %>% write_csv(filename)
 
 proc.time() - start # get stopwatch time
 ```
