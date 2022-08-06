@@ -9,12 +9,24 @@ output: html_document
 pacman::p_load(tidyverse)
 ```
 
-```{r edit}
-file <- filename
+```{r ignore}
+x <- "tick_no"
+path <- c("sat", "dep", "commit", "cl_alt","cl_sat", "ticks_tog")  
+point <- c("outcome", "out_sat", "out_dep", "ac", "pc", "jc", "LOD", "COI", "BOD", "MOD")
 ```
 
+
 ```{r ignore}
-df <- read_csv(file, # loading file with correct classes
+# agents to look at
+A <- 8
+B <- 6
+```
+
+
+```{r ignore}
+file_com <- "logfiles/500_ticks_10_agents_commit_probinvite_dynamic_10.csv"
+
+df_com <- read_csv(file_com, # loading file with correct classes
                col_types = list(
                  agent_1 = "f",
                  agent_2 = "f",
@@ -22,35 +34,23 @@ df <- read_csv(file, # loading file with correct classes
                  ticks_tog = "i"
                ))
 
-N <- length(unique(df$agent_1))
-ticks <- max(df$tick_no)
-x <- "tick_no"
-path <- c("sat", "dep", "commit", "cl_alt","cl_sat", "ticks_tog")  
-point <- c("outcome", "out_sat", "out_dep", "ac", "pc", "jc", "LOD", "COI", "BOD", "MOD")
-```
-
-```{r edit}
-# agents to look at
-A <- 3
-B <- 4
-
 theory <- "Investment"
 ```
 
-```{r dyad}
-dyad <- df %>% filter(agent_1 == A & agent_2 == B | 
-                      agent_1 == B & agent_2 == A) # find info for relevant dyad
 
-t <- dyad %>% filter(date == T) %>% select(tick_no) %>% distinct() 
-t <- unique(t$tick_no) # list of ticks the dyad spent together
+```{r ignore}
+N <- length(unique(df$agent_1))
+ticks <- max(df$tick_no)
+```
 
 
-color <- "agent_1"
+```{r individual}
+dyad_com <- df_com %>% filter(agent_1 == A) # find info for relevant dyad
+color <- "agent_2"
 
 for (y in path){
-plot <- dyad %>%
+plot <- dyad_com %>%
   ggplot(aes(x = .data[[x]], y = .data[[y]], color = .data[[color]])) +
-  geom_vline(xintercept = t, color = "#e3e3e3") +  
   geom_path() +
   labs(title = theory,
         x ="Time", 
@@ -66,7 +66,7 @@ print(plot)
 }
 
 for (y in point){
-plot <- dyad %>%
+plot <- dyad_com %>%
   filter(date == T) %>% 
   ggplot(aes(x = .data[[x]], y = .data[[y]], color = .data[[color]])) +
   geom_point() +
@@ -84,12 +84,31 @@ print(plot)
 }
 ```
 
+
+##############################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################
+
+
+```{r edit}
+file_sat <- "logfiles/500_ticks_10_agents_sat_probinvite_dynamic_10.csv"
+
+df_sat <- read_csv(file_sat, # loading file_sat with correct classes
+               col_types = list(
+                 agent_1 = "f",
+                 agent_2 = "f",
+                 tick_no = "i",
+                 ticks_tog = "i"
+               ))
+
+theory <- "Interdependence"
+```
+
+
 ```{r individual}
-dyad <- df %>% filter(agent_1 == A) # find info for relevant dyad
+dyad_sat <- df_sat %>% filter(agent_1 == A) # find info for relevant dyad
 color <- "agent_2"
 
 for (y in path){
-plot <- dyad %>%
+plot <- dyad_sat %>%
   ggplot(aes(x = .data[[x]], y = .data[[y]], color = .data[[color]])) +
   geom_path() +
   labs(title = theory,
@@ -106,7 +125,7 @@ print(plot)
 }
 
 for (y in point){
-plot <- dyad %>%
+plot <- dyad_sat %>%
   filter(date == T) %>% 
   ggplot(aes(x = .data[[x]], y = .data[[y]], color = .data[[color]])) +
   geom_point() +

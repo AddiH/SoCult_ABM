@@ -45,6 +45,10 @@ Cl's are updated at end of tick - meaning the cl noted next to an outcome is not
 *Dependency*
 Dep is calculated differently for investment and interdependece theory. For INV commit is calculated before dep.
 
+*Agent memory*
+Might be relevant to consider in relation to ticks
+
+
 ```{r}
 pacman::p_load(tidyverse)
 source("functions/dates.R")
@@ -72,7 +76,7 @@ N <- 10 # number of agents MUST BE EVEN NUMBER
 
 ticks <- 500 # how many ticks to run
 
-sort <- "commit" # sort by sat or commit? (effectively: sat = interdependence, commit = investment)
+sort <- "sat" # sort by sat or commit? (effectively: sat = interdependence, commit = investment)
 
 invite_function <- "probinvite" # prob or simple?
 
@@ -81,6 +85,7 @@ intercept <- "random" # random or none?
 cl <- "dynamic" # dynamic or static?
 
 cl_timeline <- 10 # number of encounters for calculating cl's (the agents memory)
+# Might be relevant to consider in relation to ticks
 
 ```
 
@@ -127,16 +132,16 @@ cl_sat   <- sample(1:10, N*N, replace = TRUE)
 ```{r setup dyads}
 dyads <- tibble(agent_1 = as.numeric(rep(1:N, each=N)), # create df with dyads and inital values
                 agent_2 = as.numeric(rep(seq(1:N),N)),
-                sat = sat,
-                dep = dep,
-                commit = commit,
+                sat = 0,
+                dep = 0,
+                commit = 0,
                 tick_no = 0,
                 ticks_tog = 0,
                 
                 cl_alt_b = cl_alt_b,
                 cl_sat_b = cl_sat_b,
-                cl_alt = cl_alt,
-                cl_sat = cl_sat,
+                cl_alt = 0,
+                cl_sat = 0,
                 inv = inv,
                 
                 outcome = 0, # these are cleared after each tick but saved in dyads_his
