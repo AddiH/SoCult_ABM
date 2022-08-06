@@ -50,8 +50,8 @@ ticks <- max(df$tick_no)
 
 ```{r edit}
 # agents to look at
-A <- 3
-B <- 5
+A <- 10
+B <- 3
 ```
 
 ```{r ignore}
@@ -216,7 +216,7 @@ dyad %>% # plot for cl_sat
 agent <- df %>% filter(agent_1 == A)
 
 agent %>% # plot for outcomes
-  filter(outcome != 0) %>% 
+  #filter(outcome != 0) %>% 
   ggplot(aes(x = tick_no, y = sat, color = agent_2)) +
   geom_path() +
   labs(title = theory,
@@ -224,10 +224,6 @@ agent %>% # plot for outcomes
         y = "Outcome",
         color = "Agent",
         subtitle = "Line marks a date") +
-  annotate("text",
-           x = 75, 
-           y = 0,
-           label = A_stats)+
   theme(panel.grid.major = element_blank(), 
         panel.grid.minor = element_blank(),
         panel.background = element_blank(), 

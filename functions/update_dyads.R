@@ -1,4 +1,4 @@
-update.dyads <- function(A, B, A_choice, B_choice, matrix, dyads, tick, cl, cl_timeline){
+update.dyads <- function(A, B, A_choice, B_choice, matrix, dyads, tick, cl, cl_timeline, sort){
 
 # find the box the agents end with
   if        (A_choice == "LA1" & B_choice == "LB1") {
@@ -32,10 +32,14 @@ prev_out_A_B <- dyads_his %>% # find the previous outcomes
   filter(agent_1 == A & agent_2 == B)
 
 dyads$sat[A_B_i] <- (sum(prev_out_A_B$out_sat) + dyads$out_sat[A_B_i]) / dyads$ticks_tog[A_B_i] # update sat
+dyads$commit[A_B_i] <- dyads$inv[A_B_i] * dyads$ticks_tog[A_B_i] + dyads$dep[A_B_i] # update com
 
-dyads$dep[A_B_i] <- (sum(prev_out_A_B$out_dep) + dyads$out_dep[A_B_i]) / dyads$ticks_tog[A_B_i] # update dep
+if (sort == "sat"){
+  dyads$dep[A_B_i] <- (sum(prev_out_A_B$out_dep) + dyads$out_dep[A_B_i]) / dyads$ticks_tog[A_B_i] # update dep
+} else if (sort == "commit"){
+  dyads$dep[A_B_i] <- ((sum(prev_out_A_B$out_dep) + dyads$out_dep[A_B_i]) / dyads$ticks_tog[A_B_i])  # update dep
+}
 
-dyads$commit[A_B_i] <- dyads$commit[A_B_i] + (dyads$inv[A_B_i] * dyads$ticks_tog[A_B_i]) # update com
 
 # repeat for B
 B_A_i <- which(dyads$agent_1 == B & dyads$agent_2 == A) # find the row no for the relevant dyad
@@ -51,10 +55,13 @@ prev_out_B_A <- dyads_his %>% # find the previous outcomes
   filter(agent_1 == B & agent_2 == A)
 
 dyads$sat[B_A_i] <- (sum(prev_out_B_A$out_sat) + dyads$out_sat[B_A_i]) / dyads$ticks_tog[B_A_i] # update sat
+dyads$commit[B_A_i] <- dyads$inv[B_A_i] * dyads$ticks_tog[B_A_i] + dyads$dep[B_A_i] # update com
 
-dyads$dep[B_A_i] <- (sum(prev_out_B_A$out_dep) + dyads$out_dep[B_A_i]) / dyads$ticks_tog[B_A_i] # update dep
-
-dyads$commit[B_A_i] <- dyads$commit[B_A_i] + (dyads$inv[B_A_i] * dyads$ticks_tog[B_A_i]) # update com
+if (sort == "sat"){
+  dyads$dep[B_A_i] <- (sum(prev_out_B_A$out_dep) + dyads$out_dep[B_A_i]) / dyads$ticks_tog[B_A_i] # update dep
+} else if (sort == "commit"){
+  dyads$dep[B_A_i] <- ((sum(prev_out_B_A$out_dep) + dyads$out_dep[B_A_i]) / dyads$ticks_tog[B_A_i])  # update dep
+}
 
 # update cl's
 if (cl == "dynamic"){
