@@ -9,13 +9,13 @@ generate.matrix <- function(A, B, dyads, matrix, ka, kp, intercept) {
   A_B_i <- which(dyads$agent_1 == A & dyads$agent_2 == B) # find the row no for the relevant dyad
   
   # calculate ac and pc
-  if (A_B$dep > 0){ # if dep is pos
+  if (A_B$dep > 1){ # if dep is pos
     ac <- ka / A_B$dep
     pc <- A_B$dep / kp
-  } else if (A_B$dep < 0){ # if dep is neg
+  } else if (A_B$dep < -1){ # if dep is neg
     ac <- A_B$dep / ka
     pc <- kp / A_B$dep
-  } else if (A_B$dep == 0) { # if dep is 0
+  } else { # if dep is 0
     ac <- 0
     pc <- 0
   }
@@ -67,13 +67,13 @@ generate.matrix <- function(A, B, dyads, matrix, ka, kp, intercept) {
   
   
   # calculate ac and pc
-  if (B_A$dep > 0){ # if dep is pos
+  if (B_A$dep > 1){ # if dep is pos
     ac <- ka / B_A$dep
     pc <- B_A$dep / kp
-  } else if (B_A$dep < 0){ # if dep is neg
+  } else if (B_A$dep < -1){ # if dep is neg
     ac <- B_A$dep / ka
     pc <- kp / B_A$dep
-  } else if (A_B$dep == 0) { # if dep is 0
+  } else { # if dep is 0
     ac <- 0
     pc <- 0
   }

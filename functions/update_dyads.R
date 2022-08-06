@@ -36,7 +36,7 @@ dyads$sat[A_B_i] <- (sum(prev_out_A_B$out_sat) + dyads$out_sat[A_B_i]) / dyads$t
 if (sort == "sat"){
   dyads$dep[A_B_i] <- (sum(prev_out_A_B$out_dep) + dyads$out_dep[A_B_i]) / dyads$ticks_tog[A_B_i] # update dep
 } else if (sort == "commit"){
-  dyads$dep[A_B_i] <- ((sum(prev_out_A_B$out_dep) + dyads$out_dep[A_B_i]) / dyads$ticks_tog[A_B_i])  # update dep
+  dyads$dep[A_B_i] <-((sum(prev_out_A_B$out_dep) + dyads$out_dep[A_B_i]) + dyads$commit[A_B_i]) / dyads$ticks_tog[A_B_i] # update dep
 }
 
 dyads$commit[A_B_i] <- dyads$inv[A_B_i] * dyads$ticks_tog[A_B_i] + dyads$dep[A_B_i] # update com
@@ -60,7 +60,7 @@ dyads$sat[B_A_i] <- (sum(prev_out_B_A$out_sat) + dyads$out_sat[B_A_i]) / dyads$t
 if (sort == "sat"){
   dyads$dep[B_A_i] <- (sum(prev_out_B_A$out_dep) + dyads$out_dep[B_A_i]) / dyads$ticks_tog[B_A_i] # update dep
 } else if (sort == "commit"){
-  dyads$dep[B_A_i] <- ((sum(prev_out_B_A$out_dep) + dyads$out_dep[B_A_i]) / dyads$ticks_tog[B_A_i])  # update dep
+  dyads$dep[B_A_i] <- ((sum(prev_out_B_A$out_dep) + dyads$out_dep[B_A_i]) + dyads$commit[B_A_i]) / dyads$ticks_tog[B_A_i]  # update dep
 }
 
 dyads$commit[B_A_i] <- dyads$inv[B_A_i] * dyads$ticks_tog[B_A_i] + dyads$dep[B_A_i] # update com
@@ -146,7 +146,7 @@ dyads$MOD[B_A_i] <- dyads$LOD[B_A_i] - dyads$LOD[A_B_i]
 
 COI <- ((acb*pca) + (aca*pcb) + (jcb*jca)) / (acb^2 + pcb^2 + jcb^2 + aca^2 + pcb^2 + jca^2)
   
-dyads$COI[B_A_i] <- COI
+dyads$COI[A_B_i] <- COI
 dyads$COI[B_A_i] <- COI
 
 return(dyads)
