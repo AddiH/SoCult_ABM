@@ -216,7 +216,7 @@ dyad %>% # plot for cl_sat
 agent <- df %>% filter(agent_1 == A)
 
 agent %>% # plot for outcomes
-  filter(outcome != 0) %>% 
+  #filter(outcome != 0) %>% 
   ggplot(aes(x = tick_no, y = sat, color = agent_2)) +
   geom_path() +
   labs(title = theory,
