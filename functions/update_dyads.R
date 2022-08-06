@@ -32,13 +32,14 @@ prev_out_A_B <- dyads_his %>% # find the previous outcomes
   filter(agent_1 == A & agent_2 == B)
 
 dyads$sat[A_B_i] <- (sum(prev_out_A_B$out_sat) + dyads$out_sat[A_B_i]) / dyads$ticks_tog[A_B_i] # update sat
-dyads$commit[A_B_i] <- dyads$inv[A_B_i] * dyads$ticks_tog[A_B_i] + dyads$dep[A_B_i] # update com
 
 if (sort == "sat"){
   dyads$dep[A_B_i] <- (sum(prev_out_A_B$out_dep) + dyads$out_dep[A_B_i]) / dyads$ticks_tog[A_B_i] # update dep
 } else if (sort == "commit"){
   dyads$dep[A_B_i] <- ((sum(prev_out_A_B$out_dep) + dyads$out_dep[A_B_i]) / dyads$ticks_tog[A_B_i])  # update dep
 }
+
+dyads$commit[A_B_i] <- dyads$inv[A_B_i] * dyads$ticks_tog[A_B_i] + dyads$dep[A_B_i] # update com
 
 
 # repeat for B
@@ -55,13 +56,14 @@ prev_out_B_A <- dyads_his %>% # find the previous outcomes
   filter(agent_1 == B & agent_2 == A)
 
 dyads$sat[B_A_i] <- (sum(prev_out_B_A$out_sat) + dyads$out_sat[B_A_i]) / dyads$ticks_tog[B_A_i] # update sat
-dyads$commit[B_A_i] <- dyads$inv[B_A_i] * dyads$ticks_tog[B_A_i] + dyads$dep[B_A_i] # update com
 
 if (sort == "sat"){
   dyads$dep[B_A_i] <- (sum(prev_out_B_A$out_dep) + dyads$out_dep[B_A_i]) / dyads$ticks_tog[B_A_i] # update dep
 } else if (sort == "commit"){
   dyads$dep[B_A_i] <- ((sum(prev_out_B_A$out_dep) + dyads$out_dep[B_A_i]) / dyads$ticks_tog[B_A_i])  # update dep
 }
+
+dyads$commit[B_A_i] <- dyads$inv[B_A_i] * dyads$ticks_tog[B_A_i] + dyads$dep[B_A_i] # update com
 
 # update cl's
 if (cl == "dynamic"){
@@ -122,6 +124,30 @@ cl_alt_sum_out_B_A <- ((sum(cl_alt_B_A$outcome) + dyads$outcome[B_A_i]) / div) #
 dyads$cl_alt[B_A_i] <- cl_alt_sum_out_B_A + dyads$cl_alt_b[B_A_i] # update cl_alt by adding cl_alt_base
 
 }
+
+
+# dimensions 
+aca <- dyads$ac[A_B_i]
+pca <- dyads$pc[A_B_i]
+jca <- dyads$jc[A_B_i]
+
+acb <- dyads$ac[B_A_i]
+pcb <- dyads$pc[B_A_i]
+jcb <- dyads$jc[B_A_i]
+
+dyads$LOD[A_B_i] <- (pca^2 + jca^2) / (aca^2 + pca^2 + jca^2)
+dyads$BOD[A_B_i] <- pca/jca
+
+dyads$LOD[B_A_i] <- (pcb^2 + jcb^2) / (acb^2 + pcb^2 + jcb^2)
+dyads$BOD[B_A_i] <- pcb/jcb
+
+dyads$MOD[A_B_i] <- dyads$LOD[A_B_i] - dyads$LOD[B_A_i]
+dyads$MOD[B_A_i] <- dyads$LOD[B_A_i] - dyads$LOD[A_B_i]
+
+COI <- ((acb*pca) + (aca*pcb) + (jcb*jca)) / (acb^2 + pcb^2 + jcb^2 + aca^2 + pcb^2 + jca^2)
+  
+dyads$COI[B_A_i] <- COI
+dyads$COI[B_A_i] <- COI
 
 return(dyads)
 }
