@@ -11,20 +11,20 @@ pacman::p_load(tidyverse)
 
 ```{r ignore}
 x <- "tick_no"
-path <- c("sat", "dep", "commit", "cl_alt","cl_sat", "ticks_tog")  
-point <- c("outcome", "out_sat", "out_dep", "ac", "pc", "jc", "LOD", "COI", "BOD", "MOD")
+path <- c("sat", "dep", "commit", "cl_alt","cl_sat", "ticks_tog", "outcome", "out_sat", "out_dep")
+point <- c( "ac", "pc", "jc", "LOD", "COI", "BOD", "MOD")
 ```
 
 
 ```{r ignore}
 # agents to look at
-A <- 8
-B <- 6
+A <- 10
+B <- 9
 ```
 
 
 ```{r ignore}
-file_com <- "logfiles/500_ticks_10_agents_commit_probinvite_dynamic_10.csv"
+file_com <- "logfiles/500_ticks_20_agents_commit_probinvite_dynamic_10.csv"
 
 df_com <- read_csv(file_com, # loading file with correct classes
                col_types = list(
@@ -34,22 +34,34 @@ df_com <- read_csv(file_com, # loading file with correct classes
                  ticks_tog = "i"
                ))
 
-theory <- "Investment"
+file_sat <- "logfiles/500_ticks_20_agents_sat_probinvite_dynamic_10.csv"
+
+df_sat <- read_csv(file_sat, # loading file_sat with correct classes
+               col_types = list(
+                 agent_1 = "f",
+                 agent_2 = "f",
+                 tick_no = "i",
+                 ticks_tog = "i"
+               ))
+
 ```
 
 
 ```{r ignore}
-N <- length(unique(df$agent_1))
-ticks <- max(df$tick_no)
+N <- length(unique(df_com$agent_1))
+ticks <- max(df_com$tick_no)
 ```
 
+```{r ignore}
+theory <- "Investment"
+```
 
-```{r individual}
-dyad_com <- df_com %>% filter(agent_1 == A) # find info for relevant dyad
-color <- "agent_2"
+```{r network}
+net_com <- df_com %>% filter(date == T) # find info for relevant dyad
+color <- "agent_1"
 
 for (y in path){
-plot <- dyad_com %>%
+plot <- net_com %>%
   ggplot(aes(x = .data[[x]], y = .data[[y]], color = .data[[color]])) +
   geom_path() +
   labs(title = theory,
@@ -66,7 +78,48 @@ print(plot)
 }
 
 for (y in point){
-plot <- dyad_com %>%
+plot <- net_com %>%
+  ggplot(aes(x = .data[[x]], y = .data[[y]], color = .data[[color]])) +
+  geom_point() +
+  labs(title = theory,
+        x ="Time", 
+        y = y,
+        color = color,
+        subtitle = "Line marks a date") +
+  theme(plot.subtitle = element_text(color = "grey")) +
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_blank(), 
+        axis.line = element_line(colour = "black"))
+print(plot)
+}
+```
+
+
+
+```{r individual}
+agent_A_com <- df_com %>% filter(agent_1 == A) # find info for relevant dyad
+color <- "agent_2"
+
+for (y in path){
+plot <- agent_A_com %>%
+  ggplot(aes(x = .data[[x]], y = .data[[y]], color = .data[[color]])) +
+  geom_path() +
+  labs(title = theory,
+        x ="Time", 
+        y = y,
+        color = color,
+        subtitle = "Line marks a date") +
+  theme(plot.subtitle = element_text(color = "grey")) +
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_blank(), 
+        axis.line = element_line(colour = "black"))
+print(plot)
+}
+
+for (y in point){
+plot <- agent_A_com %>%
   filter(date == T) %>% 
   ggplot(aes(x = .data[[x]], y = .data[[y]], color = .data[[color]])) +
   geom_point() +
@@ -89,26 +142,15 @@ print(plot)
 
 
 ```{r edit}
-file_sat <- "logfiles/500_ticks_10_agents_sat_probinvite_dynamic_10.csv"
-
-df_sat <- read_csv(file_sat, # loading file_sat with correct classes
-               col_types = list(
-                 agent_1 = "f",
-                 agent_2 = "f",
-                 tick_no = "i",
-                 ticks_tog = "i"
-               ))
-
 theory <- "Interdependence"
 ```
 
-
-```{r individual}
-dyad_sat <- df_sat %>% filter(agent_1 == A) # find info for relevant dyad
-color <- "agent_2"
+```{r network}
+net_sat <- df_sat %>% filter(date == T) # find info for relevant dyad
+color <- "agent_1"
 
 for (y in path){
-plot <- dyad_sat %>%
+plot <- net_sat %>%
   ggplot(aes(x = .data[[x]], y = .data[[y]], color = .data[[color]])) +
   geom_path() +
   labs(title = theory,
@@ -125,7 +167,46 @@ print(plot)
 }
 
 for (y in point){
-plot <- dyad_sat %>%
+plot <- net_sat %>%
+  ggplot(aes(x = .data[[x]], y = .data[[y]], color = .data[[color]])) +
+  geom_point() +
+  labs(title = theory,
+        x ="Time", 
+        y = y,
+        color = color,
+        subtitle = "Line marks a date") +
+  theme(plot.subtitle = element_text(color = "grey")) +
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_blank(), 
+        axis.line = element_line(colour = "black"))
+print(plot)
+}
+```
+
+```{r individual}
+agent_A_sat <- df_sat %>% filter(agent_1 == A) # find info for relevant dyad
+color <- "agent_2"
+
+for (y in path){
+plot <- agent_A_sat %>%
+  ggplot(aes(x = .data[[x]], y = .data[[y]], color = .data[[color]])) +
+  geom_path() +
+  labs(title = theory,
+        x ="Time", 
+        y = y,
+        color = color,
+        subtitle = "Line marks a date") +
+  theme(plot.subtitle = element_text(color = "grey")) +
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_blank(), 
+        axis.line = element_line(colour = "black"))
+print(plot)
+}
+
+for (y in point){
+plot <- agent_A_sat %>%
   filter(date == T) %>% 
   ggplot(aes(x = .data[[x]], y = .data[[y]], color = .data[[color]])) +
   geom_point() +
@@ -142,3 +223,78 @@ plot <- dyad_sat %>%
 print(plot)
 }
 ```
+
+
+
+```{r both ABMS}
+color <- "agent_2"
+x <- "tick_no"
+
+path <- c("sat", "commit", "ticks_tog")
+
+A <-  5
+
+agent_A_sat <- df_sat %>% filter(agent_1 == A)
+agent_A_com <- df_com %>% filter(agent_1 == A)
+
+
+for (y in path){
+plot <- agent_A_sat %>%
+  ggplot(aes(x = .data[[x]], y = .data[[y]], color = .data[[color]])) +
+  geom_path() +
+  labs(title = "Interdependence/satisfaction",
+        x ="Time", 
+        y = y,
+        color = color) +
+  theme(plot.subtitle = element_text(color = "grey")) +
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_blank(), 
+        axis.line = element_line(colour = "black"))
+print(plot)
+}
+
+for (y in path){
+plot <- agent_A_com %>%
+  ggplot(aes(x = .data[[x]], y = .data[[y]], color = .data[[color]])) +
+  geom_path() +
+  labs(title = "Investment/commit",
+        x ="Time", 
+        y = y,
+        color = color) +
+  theme(plot.subtitle = element_text(color = "grey")) +
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_blank(), 
+        axis.line = element_line(colour = "black"))
+print(plot)
+}
+
+```
+
+
+
+```{r}
+df_sat_500 <- df_sat %>% filter(tick_no == 500) %>% filter(ticks_tog != 0)
+df_com_500 <- df_com %>% filter(tick_no == 500) %>% filter(ticks_tog != 0)
+
+x <- c("sat", "dep","ticks_tog")
+
+for (x in x){
+p <- df_sat_500 %>% 
+  ggplot(aes(x = .data[[x]],  fill = agent_1)) +
+  geom_histogram() +
+  labs(title = "Interdependence/satisfaction")
+print(p)
+
+pp <- df_com_500 %>% 
+  ggplot(aes(x = .data[[x]],  fill = agent_1)) +
+  geom_histogram() +
+  labs(title = "Investment/commit")
+
+print(pp)
+}
+
+  
+```
+
