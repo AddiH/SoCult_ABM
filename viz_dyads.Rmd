@@ -275,24 +275,46 @@ print(plot)
 
 
 ```{r}
-df_sat_500 <- df_sat %>% filter(tick_no == 500) %>% filter(ticks_tog != 0)
-df_com_500 <- df_com %>% filter(tick_no == 500) %>% filter(ticks_tog != 0)
 
-x <- c("sat", "dep","ticks_tog")
+sat_1 <- read_csv("logfiles/sat_1.csv", col_types = list(agent_1 = "f",agent_2 = "f",tick_no = "i",ticks_tog = "i"))
+sat_2 <- read_csv("logfiles/sat_2.csv", col_types = list(agent_1 = "f",agent_2 = "f",tick_no = "i",ticks_tog = "i"))
+com_1 <- read_csv("logfiles/commit_1.csv", col_types = list(agent_1 = "f",agent_2 = "f",tick_no = "i",ticks_tog = "i"))
+com_2 <- read_csv("logfiles/commit_2.csv", col_types = list(agent_1 = "f",agent_2 = "f",tick_no = "i",ticks_tog = "i"))
+
+sat_1 <- sat_1  %>% filter(tick_no == 100 & ticks_tog < 75) 
+sat_2 <- sat_2  %>% filter(tick_no == 100 & ticks_tog < 75) 
+com_1 <- com_1  %>% filter(tick_no == 100 & ticks_tog < 75) 
+com_2 <- com_2  %>% filter(tick_no == 100 & ticks_tog < 75) 
+
+
+x <- c("sat", "dep", "commit", "ticks_tog")
 
 for (x in x){
-p <- df_sat_500 %>% 
+p <- sat_1 %>% 
   ggplot(aes(x = .data[[x]],  fill = agent_1)) +
   geom_histogram() +
-  labs(title = "Interdependence/satisfaction")
+  labs(title = "Interdependence/satisfaction - 1")
 print(p)
 
-pp <- df_com_500 %>% 
+p <- sat_2 %>% 
   ggplot(aes(x = .data[[x]],  fill = agent_1)) +
   geom_histogram() +
-  labs(title = "Investment/commit")
+  labs(title = "Interdependence/satisfaction - 2")
+print(p)
+
+pp <- com_1 %>% 
+  ggplot(aes(x = .data[[x]],  fill = agent_1)) +
+  geom_histogram() +
+  labs(title = "Investment/commit - 1")
+print(pp)
+
+pp <- com_2 %>% 
+  ggplot(aes(x = .data[[x]],  fill = agent_1)) +
+  geom_histogram() +
+  labs(title = "Investment/commit - 2")
 
 print(pp)
+
 }
 
   
