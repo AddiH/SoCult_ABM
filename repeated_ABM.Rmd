@@ -44,7 +44,7 @@ sims <- 30 # number of sims for each theory
 
 ```{r}
 for (sort in theory){
-for (simmer in range(1:sims)){
+for (simmer in 1:sims){
 empty_matrix <- read_csv("functions/empty_matrix.csv", show_col_types = FALSE)
 
 ###########
